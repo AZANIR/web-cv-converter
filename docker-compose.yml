@@ -1,0 +1,37 @@
+services:
+  backend:
+    build: ./backend
+    container_name: cv_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/fonts:/app/fonts:ro
+      - ./backend/assets:/app/assets:ro
+      - ./backend/styles.json:/app/styles.json:ro
+      - ./backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NUXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: cv_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Must exist: frontend/.env.production (see .env.production.example). Needs NUXT_SESSION_PASSWORD (32+ chars).
+    env_file:
+      - ./frontend/.env.production
+    environment:
+      # SSR / middleware inside the container must call FastAPI by service name, not localhost
+      NUXT_API_BASE_SERVER: http://backend:8000
+      NUXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: cv_network

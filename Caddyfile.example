@@ -1,0 +1,22 @@
+# Example: on VPS with Caddy in Docker, use upstream *service names* on the Docker network `web`,
+# e.g. cvc-backend:8000 / cvc-frontend:3000 (see docker-compose.hetzner.yml).
+# For local testing without Docker DNS, use localhost:8000 / localhost:3000.
+
+cvc.valtive.io {
+	handle /api/* {
+		reverse_proxy cvc-backend:8000
+	}
+	handle /health {
+		reverse_proxy cvc-backend:8000
+	}
+	handle {
+		reverse_proxy cvc-frontend:3000
+	}
+}
+
+# Same layout for a single host with published ports (no Docker network):
+# yourdomain.com {
+# 	handle /api/* { reverse_proxy localhost:8000 }
+# 	handle /health { reverse_proxy localhost:8000 }
+# 	handle { reverse_proxy localhost:3000 }
+# }

@@ -1,0 +1,149 @@
+{
+  "page": {
+    "format": "A4",
+    "width_mm": 210,
+    "height_mm": 297,
+    "margin_top_mm": 0,
+    "margin_bottom_mm": 3.5,
+    "margin_left_mm": 0,
+    "margin_right_mm": 0,
+    "content_padding_left_mm": 16,
+    "content_padding_right_mm": 16
+  },
+  "fonts": {
+    "family": "Arial",
+    "fallback": "Liberation Sans, Helvetica, sans-serif",
+    "files": {
+      "regular": "fonts/Arial.ttf",
+      "bold": "fonts/Arial-Bold.ttf",
+      "italic": "fonts/Arial-Italic.ttf"
+    }
+  },
+  "colors": {
+    "header_bg": "#0D3B52",
+    "header_name": "#FFFFFF",
+    "header_title": "#B0D8D6",
+    "header_contacts": "#8BBFBD",
+    "header_banner_name": "#FFFFFF",
+    "header_banner_title": "#FFFFFF",
+    "header_banner_contacts": "#D0E8E6",
+    "section_title": "#0D3B52",
+    "body_text": "#1E2D38",
+    "skill_label": "#188A88",
+    "company_name": "#188A88",
+    "date_text": "#5A6E7A",
+    "project_title": "#0D3B52",
+    "tech_tag_text": "#1A7A60",
+    "tech_tag_bg": "#E5F5F0",
+    "divider_blue": "#188A88",
+    "divider_gray": "#C5CDCF",
+    "page_bg": "#FFFFFF"
+  },
+  "header": {
+    "height_mm": 48,
+    "padding_top_mm": 10,
+    "padding_left_mm": 16,
+    "banner_image": "assets/header.jpg",
+    "banner_overlay_opacity": 0.5,
+    "name": {
+      "font_size_pt": 22,
+      "font_weight": "bold",
+      "text_transform": "uppercase"
+    },
+    "title": {
+      "font_size_pt": 12,
+      "font_weight": "normal",
+      "margin_top_mm": 2
+    },
+    "contacts": {
+      "font_size_pt": 8.5,
+      "font_weight": "normal",
+      "separator": " | ",
+      "margin_top_mm": 2
+    }
+  },
+  "section_title": {
+    "font_size_pt": 10.5,
+    "font_weight": "bold",
+    "text_transform": "uppercase",
+    "margin_top_mm": 5,
+    "margin_bottom_mm": 3,
+    "divider": {
+      "blue_width_mm": 38,
+      "blue_line_width_pt": 2,
+      "gray_line_width_pt": 0.5,
+      "spacing_after_mm": 2
+    }
+  },
+  "body_text": {
+    "font_size_pt": 9,
+    "line_height_mm": 4.5
+  },
+  "skills": {
+    "label": {
+      "font_size_pt": 8,
+      "font_weight": "bold",
+      "column_width_mm": 38
+    },
+    "value": {
+      "font_size_pt": 8,
+      "font_weight": "normal"
+    },
+    "row_height_mm": 4.5
+  },
+  "certifications": {
+    "font_size_pt": 8.5,
+    "bullet_char": "•",
+    "indent_mm": 2,
+    "line_height_mm": 5
+  },
+  "experience": {
+    "job_title": {
+      "font_size_pt": 10,
+      "font_weight": "bold",
+      "margin_top_mm": 4
+    },
+    "company": {
+      "font_size_pt": 9,
+      "font_weight": "normal"
+    },
+    "date": {
+      "font_size_pt": 8.5,
+      "font_style": "italic",
+      "align": "right"
+    },
+    "project": {
+      "title": {
+        "font_size_pt": 8.5,
+        "font_weight": "bold",
+        "indent_mm": 4
+      },
+      "tech_tag": {
+        "font_size_pt": 7.5,
+        "padding_h_mm": 2.5,
+        "padding_v_mm": 1,
+        "border_radius_mm": 1,
+        "gap_mm": 1.5,
+        "indent_mm": 4
+      },
+      "team_info": {
+        "font_size_pt": 7.5,
+        "font_style": "italic",
+        "indent_mm": 4
+      },
+      "bullet": {
+        "font_size_pt": 8.5,
+        "indent_mm": 6,
+        "bullet_char": "•",
+        "line_height_mm": 4.5,
+        "spacing_mm": 0.5
+      }
+    }
+  },
+  "languages": {
+    "font_size_pt": 8.5,
+    "bullet_char": "•",
+    "indent_mm": 2,
+    "line_height_mm": 5
+  }
+}

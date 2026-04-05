@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+.venv-tmp/
+backend/.venv-tmp/
+
+# Local-only Hetzner bootstrap checklist (see docs/DEPLOY_HETZNER.md)
+hetzner-server-bootstrap.local.md
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+backend/.env
+frontend/.env
+frontend/.env.production
+
+# Generated output
+output/
+
+# Build artifacts
+frontend/.nuxt/
+frontend/.output/
+frontend/node_modules/
+
+# Logs
+*.log
+
+# Editor / IDE
+.cursor/
+.claude/
+
+# Design files
+*.pen

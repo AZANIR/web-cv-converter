@@ -1,0 +1,42 @@
+:root {
+  /* wcc2.pen design tokens */
+  --cv-primary-dark: #0d3b52;
+  --cv-primary-dark-90: #0d3b52e6;
+  --cv-teal-accent: #188a88;
+  --cv-teal-light-bg: #e8f4f3;
+  --cv-body-text: #1e2d38;
+  --cv-muted-text: #5a6e7a;
+  --cv-light-gray-bg: #f9fafb;
+  --cv-surface: #ffffff;
+  --cv-divider-gray: #c5cdcf;
+  --cv-teal-subtle-bg: #f0f9f8;
+  --cv-tag-bg: #e5f5f0;
+  --cv-tag-text: #1a7a60;
+  --cv-header-title-light: #b0d8d6;
+  --cv-header-contacts-light: #8bbfbd;
+  --cv-success-green: #16a34a;
+  --cv-success-bg: #f0fdf4;
+  --cv-error-red: #dc2626;
+  --cv-error-bg: #fef2f2;
+  --cv-warning-amber: #f59e0b;
+  --cv-warning-bg: #fef3c7;
+  --cv-pending-badge-bg: #f3f4f6;
+  --cv-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+body {
+  background-color: var(--cv-light-gray-bg);
+  color: var(--cv-body-text);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.cv-nav-border {
+  border-bottom: 2px solid var(--cv-teal-accent);
+}
+
+.cv-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
