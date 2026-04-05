@@ -3,7 +3,7 @@ name: Deploy production (Hetzner)
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "backend/**"
       - "frontend/**"
@@ -41,7 +41,7 @@ jobs:
             set -e
             cd /opt/docker/cvc/repo
             git fetch origin
-            git reset --hard origin/main
+            git reset --hard origin/master
             cd /opt/docker
             docker compose -f docker-compose.yml -f ./cvc/repo/docker-compose.hetzner.yml build cvc-backend cvc-frontend
             docker compose -f docker-compose.yml -f ./cvc/repo/docker-compose.hetzner.yml up -d cvc-backend cvc-frontend
