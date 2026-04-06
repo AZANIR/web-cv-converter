@@ -24,6 +24,8 @@ def _make_settings(**overrides) -> Settings:
         allowed_origins="http://localhost:3000",
         admin_emails="admin@test.com",
         conversions_per_hour=10,
+        embedding_model="text-embedding-004",
+        embedding_dimensions=768,
     )
     defaults.update(overrides)
     return Settings(**defaults)
@@ -87,6 +89,9 @@ def app(settings, mock_supabase):
         patch("routers.history.get_supabase", return_value=mock_supabase),
         patch("routers.me.get_supabase", return_value=mock_supabase),
         patch("routers.admin.get_supabase", return_value=mock_supabase),
+        patch("routers.generate.get_supabase", return_value=mock_supabase),
+        patch("routers.generate.get_settings", return_value=settings),
+        patch("services.prompt_service.get_supabase", return_value=mock_supabase),
     ):
         yield _app
 

@@ -1,0 +1,10 @@
+node_modules
+.nuxt
+.output
+dist
+.git
+*.log
+test-reports
+tests
+vitest.config.ts
+coverage

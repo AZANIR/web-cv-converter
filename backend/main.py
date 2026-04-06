@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import get_settings
 from core.supabase import get_supabase
-from routers import admin, convert, history, me
+from routers import admin, convert, generate, history, me, prompts
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,5 +35,7 @@ def health():
 
 app.include_router(me.router, prefix="/api")
 app.include_router(convert.router, prefix="/api")
+app.include_router(generate.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(prompts.router, prefix="/api")
