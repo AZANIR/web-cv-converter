@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     # Comma-separated emails that receive admin (UI + /api/admin/*) without profiles.role in DB.
     admin_emails: str = ""
 
+    # Embedding
+    embedding_model: str = "gemini-embedding-001"
+    embedding_dimensions: int = 3072
+
     max_upload_bytes: int = 5 * 1024 * 1024
     conversions_per_hour: int = 10
     signed_url_expires_seconds: int = 3600

@@ -11,7 +11,7 @@ export default defineOAuthAuth0EventHandler({
     },
   },
   async onSuccess(event, { user, tokens }) {
-    const apiBase = process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const apiBase = process.env.NUXT_API_BASE_SERVER || process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8000'
     const headers: Record<string, string> = {
       Authorization: `Bearer ${tokens.access_token}`,
     }

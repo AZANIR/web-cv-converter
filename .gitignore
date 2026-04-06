@@ -30,6 +30,10 @@ frontend/.nuxt/
 frontend/.output/
 frontend/node_modules/
 
+# Test reports and coverage
+test-reports/
+backend/.coverage
+
 # Logs
 *.log
 
@@ -40,3 +44,4 @@ frontend/node_modules/
 # Design files
 *.pen
 design_task.md
+qa-cv-creation-main/

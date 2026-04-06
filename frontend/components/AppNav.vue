@@ -60,11 +60,25 @@ async function logout() {
         Dashboard
       </NuxtLink>
       <NuxtLink
+        to="/generate"
+        :class="linkClass('/generate')"
+        class="text-sm"
+      >
+        Generate CV
+      </NuxtLink>
+      <NuxtLink
         to="/history"
         :class="linkClass('/history')"
         class="text-sm"
       >
         History
+      </NuxtLink>
+      <NuxtLink
+        to="/generate-history"
+        :class="linkClass('/generate-history')"
+        class="text-sm"
+      >
+        Generated
       </NuxtLink>
       <NuxtLink
         v-if="isAdmin"
@@ -73,6 +87,14 @@ async function logout() {
         class="text-sm"
       >
         Admin
+      </NuxtLink>
+      <NuxtLink
+        v-if="isAdmin"
+        to="/admin/prompts"
+        :class="linkClass('/admin/prompts')"
+        class="text-sm"
+      >
+        Prompts
       </NuxtLink>
       <div class="w-px h-6 bg-[var(--cv-divider-gray)] shrink-0" aria-hidden="true" />
       <div class="flex items-center gap-2">
@@ -124,11 +146,25 @@ async function logout() {
       Dashboard
     </NuxtLink>
     <NuxtLink
+      to="/generate"
+      :class="mobileLinkClass('/generate')"
+      @click="menuOpen = false"
+    >
+      Generate CV
+    </NuxtLink>
+    <NuxtLink
       to="/history"
       :class="mobileLinkClass('/history')"
       @click="menuOpen = false"
     >
       History
+    </NuxtLink>
+    <NuxtLink
+      to="/generate-history"
+      :class="mobileLinkClass('/generate-history')"
+      @click="menuOpen = false"
+    >
+      Generated
     </NuxtLink>
     <NuxtLink
       v-if="isAdmin"
@@ -137,6 +173,14 @@ async function logout() {
       @click="menuOpen = false"
     >
       Admin
+    </NuxtLink>
+    <NuxtLink
+      v-if="isAdmin"
+      to="/admin/prompts"
+      :class="mobileLinkClass('/admin/prompts')"
+      @click="menuOpen = false"
+    >
+      Prompts
     </NuxtLink>
     <div class="h-px bg-[var(--cv-divider-gray)] my-2" />
     <div class="px-4 py-3 flex flex-col gap-2">
