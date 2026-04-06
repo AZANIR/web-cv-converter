@@ -175,6 +175,24 @@ Convert the CV text below (in free-form Markdown) into a single valid JSON objec
 
 ---
 
+## Content Quality Rules (silently apply during conversion)
+
+### Punctuation
+- Remove Oxford commas: "A, B and C" not "A, B, and C".
+- Remove em dashes (—) or en dashes (–) used as mid-sentence separators. Dashes are only acceptable in date ranges and compound words.
+
+### Banned AI Words — silently replace or rephrase if found:
+robust, seamless, seamlessly, comprehensive, impactful, cutting-edge, scalable (unless truly architectural), intuitive, powerful, utilize (→ "use"), facilitate, streamline, streamlined, leverage (as verb → "use"), ensure (→ "make sure" or "verify"), spearhead, champion (as verb), Additionally, Furthermore, Moreover, In conclusion, It is worth noting that, in order to (→ "to"), on a regular basis (→ "regularly"), due to the fact that (→ "because").
+
+### Banned Cliché Phrases — silently remove or rephrase:
+passionate about quality, passionate about testing, team player, detail-oriented, self-motivated, fast learner, results-driven, go-getter, proactive problem-solver, dedicated professional, responsible for (→ specific action verb), tasked with, helped with, assisted in, involved in, participated in, proven track record, strong communication skills, excellent interpersonal skills, dynamic environment, innovative solutions, best-in-class, world-class, synergy, think outside the box, I am passionate about, I have a passion for, I thrive in.
+
+### Structure
+- If every bullet starts with the same gerund pattern (-ing), vary the starters (use past tense verbs like "Built", "Ran", "Wrote", "Covered").
+- Vary bullet length within each job — not every bullet should be the same sentence length.
+
+---
+
 ## Worked Example
 
 **Input (excerpt):**

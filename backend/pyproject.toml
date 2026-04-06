@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--html=../test-reports/backend/report.html --self-contained-html"
+
+[tool.coverage.run]
+source = ["core", "services", "routers"]
+omit = ["tests/*"]
+
+[tool.coverage.html]
+directory = "../test-reports/backend/coverage"
