@@ -9,6 +9,7 @@ function apiBaseUrl(config: ReturnType<typeof useRuntimeConfig>): string {
 export function useApiRequest() {
   const config = useRuntimeConfig()
   const { session } = useUserSession()
+  const { $apiFetch } = useNuxtApp()
 
   return async <T = unknown>(path: string, options: Record<string, unknown> = {}): Promise<T> => {
     const token = session.value?.accessToken as string | undefined
@@ -22,7 +23,8 @@ export function useApiRequest() {
     if (idToken) {
       headers['X-Auth0-ID-Token'] = idToken
     }
-    return $fetch<T>(`${apiBaseUrl(config)}${path}`, {
+    const fetchFn = (import.meta.client && $apiFetch ? $apiFetch : $fetch) as typeof $fetch
+    return fetchFn<T>(`${apiBaseUrl(config)}${path}`, {
       ...options,
       headers,
     } as Parameters<typeof $fetch>[1])
