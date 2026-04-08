@@ -1,0 +1,79 @@
+---
+description: Git branching strategy and Conventional Commits for web-cv-converter
+alwaysApply: true
+---
+
+# Git Workflow
+
+## Branch Policy
+
+**NEVER commit directly to `master`.** All work happens on feature branches.
+
+### Branch Naming
+
+| Type | Pattern | Example |
+|---|---|---|
+| Feature | `feat/{short-description}` | `feat/add-vacancy-parser` |
+| Bug fix | `fix/{short-description}` | `fix/auth-token-expiry` |
+| Frontend | `feat/frontend/{description}` | `feat/frontend/upload-form-a11y` |
+| Backend | `feat/backend/{description}` | `feat/backend/rate-limit` |
+| Tests | `test/{description}` | `test/e2e-login-flow` |
+| Docs | `docs/{description}` | `docs/api-contract-update` |
+| Refactor | `refactor/{description}` | `refactor/service-layer` |
+| CI/CD | `ci/{description}` | `ci/docker-build-cache` |
+
+Use lowercase, hyphens as separators, max 4 words after the type prefix.
+
+### Before Starting Work
+
+1. `git branch --show-current` — confirm you are NOT on master
+2. `git pull origin master` — sync with latest
+3. `git checkout -b feat/{description}` — create branch
+
+## Conventional Commits
+
+Format: `<type>(<scope>): <description>`
+
+### Types
+
+| Type | When |
+|---|---|
+| `feat` | New feature or endpoint |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | CSS, formatting, no logic change |
+| `refactor` | Code restructuring, no feature/fix |
+| `perf` | Performance improvement |
+| `test` | Adding or updating tests |
+| `ci` | CI/CD pipeline changes |
+| `chore` | Deps update, config, maintenance |
+
+### Scopes
+
+| Scope | Applies to |
+|---|---|
+| `backend` | FastAPI routes, services, core |
+| `frontend` | Nuxt pages, components, composables |
+| `auth` | Auth0 integration, middleware |
+| `db` | Supabase schema, migrations |
+| `e2e` | Playwright tests |
+| `docs` | Documentation |
+| `docker` | Docker/deploy config |
+| `deps` | Dependency updates |
+
+### Examples
+
+```
+feat(backend): add rate limiting to convert endpoint
+fix(auth): handle missing email in Auth0 access token
+feat(frontend): add WCAG-compliant upload form
+test(e2e): add login flow Playwright spec
+docs(db): document Supabase RLS policies
+```
+
+### Rules
+
+- Description starts with lowercase verb (add, fix, update, remove)
+- Max 72 characters on first line
+- No period at end
+- Body explains WHY, not what (the diff shows what)

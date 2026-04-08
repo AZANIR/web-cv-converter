@@ -38,8 +38,13 @@ backend/.coverage
 *.log
 
 # Editor / IDE
-.cursor/
+# Track agent rules, skills, and memory — ignore IDE state only
+.cursor/plans/
 .claude/
+# Explicitly track cursor agent system
+!.cursor/rules/
+!.cursor/agents/
+!.cursor/memory/
 
 # Design files
 *.pen

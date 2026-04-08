@@ -1,0 +1,45 @@
+---
+description: Artifact routing — maps each agent to its output directory
+globs: "**"
+alwaysApply: true
+---
+
+# Project Structure — Artifact Routing
+
+When generating project artifacts, save outputs to these directories.
+Create the directory on first use if it does not exist.
+
+## Agent Output Directories
+
+| Agent | Output Directory | File Pattern |
+|---|---|---|
+| document (specs) | `docs/specs/` | `SPEC-{feature}.md` |
+| document (API contracts) | `docs/api-contracts/` | `{service}.openapi.yaml` |
+| document (ADRs) | `docs/decisions/` | `ADR-{NNN}-{title}.md` |
+| document (deployment) | `docs/deployment/` | `{topic}.md` |
+| backend (routers) | `backend/routers/` | `{resource}.py` |
+| backend (services) | `backend/services/` | `{resource}_service.py` |
+| backend (migrations) | `backend/supabase/schema.sql` | append-only SQL |
+| backend (core) | `backend/core/` | `{module}.py` |
+| frontend (pages) | `frontend/pages/` | `{page}.vue` |
+| frontend (components) | `frontend/components/` | `{Component}.vue` |
+| frontend (composables) | `frontend/composables/` | `use{Name}.ts` |
+| frontend (layouts) | `frontend/layouts/` | `{name}.vue` |
+| frontend (middleware) | `frontend/middleware/` | `{name}.ts` |
+| tester (backend unit) | `backend/tests/` | `test_{module}.py` |
+| tester (frontend unit) | `frontend/tests/` | `{component}.test.ts` |
+| tester (E2E) | `tests/e2e/` | `{flow}.spec.ts` |
+| tester (coverage report) | `reports/coverage/` | `coverage-{date}.md` |
+| code-reviewer (report) | `reports/reviews/` | `review-{date}-{feature}.md` |
+| memory-keeper (QA log) | `docs/qa-memory/` | see memory schema |
+| memory-keeper (context) | `memory-bank/` | see memory-bank schema |
+
+## Conventions
+
+- All paths are relative to the project root.
+- Never pre-create empty directories — create on first artifact write.
+- Backend test files follow pytest naming: `test_{module}.py`.
+- Frontend test files follow vitest naming: `{Component}.test.ts`.
+- E2E spec files follow Playwright naming: `{flow}.spec.ts`.
+- Migration SQL is append-only in `backend/supabase/schema.sql` — never drop.
+- ADR numbers are sequential zero-padded to 3 digits (ADR-001, ADR-002, ...).
