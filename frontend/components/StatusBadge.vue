@@ -19,13 +19,13 @@ const label = computed(() => {
 const cls = computed(() => {
   switch (props.status) {
     case 'completed':
-      return 'bg-[var(--cv-success-bg)] text-[var(--cv-success-green)]'
+      return 'bg-cv-success-bg text-cv-success'
     case 'processing':
-      return 'bg-[var(--cv-warning-bg)] text-[var(--cv-warning-amber)]'
+      return 'bg-cv-warning-bg text-cv-warning'
     case 'failed':
-      return 'bg-[var(--cv-error-bg)] text-[var(--cv-error-red)]'
+      return 'bg-cv-error-bg text-cv-error'
     default:
-      return 'bg-[var(--cv-pending-badge-bg)] text-[var(--cv-muted-text)]'
+      return 'bg-cv-pending text-cv-muted'
   }
 })
 </script>

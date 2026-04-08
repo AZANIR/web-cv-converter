@@ -178,10 +178,10 @@ async function retryConversion() {
     :class="conversionId && remoteStatus !== 'failed' ? 'py-10' : 'py-6 md:py-10'"
   >
     <div class="text-center flex flex-col gap-2">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-[var(--cv-primary-dark)]">
+      <h1 class="text-[1.75rem] leading-tight font-bold text-cv-primary">
         Convert Your CV
       </h1>
-      <p class="text-base text-[var(--cv-muted-text)]">
+      <p class="text-base text-cv-muted">
         Upload a Markdown file to generate a professional PDF
       </p>
     </div>
@@ -196,8 +196,8 @@ async function retryConversion() {
 
     <div
       v-if="!file"
-      class="rounded-xl border-2 border-[var(--cv-teal-accent)] bg-[var(--cv-teal-subtle-bg)] p-12 flex flex-col items-center gap-3 text-center cursor-pointer transition-shadow"
-      :class="dragOver ? 'ring-2 ring-[var(--cv-teal-accent)] ring-offset-2' : ''"
+      class="rounded-xl border-2 border-cv-teal bg-cv-teal-subtle p-12 flex flex-col items-center gap-3 text-center cursor-pointer transition-shadow"
+      :class="dragOver ? 'ring-2 ring-cv-teal ring-offset-2' : ''"
       role="button"
       tabindex="0"
       @click="fileInput?.click()"
@@ -207,23 +207,23 @@ async function retryConversion() {
       @drop.prevent="onDrop"
     >
       <span
-        class="text-[3rem] leading-none text-[var(--cv-divider-gray)] select-none"
+        class="text-[3rem] leading-none text-cv-divider select-none"
         aria-hidden="true"
       >⬆</span>
-      <p class="text-base text-[var(--cv-body-text)]">
+      <p class="text-base text-cv-body">
         Drag &amp; drop your .md file here
       </p>
-      <p class="text-sm font-normal text-[var(--cv-teal-accent)]">
+      <p class="text-sm font-normal text-cv-teal">
         or click to browse
       </p>
-      <p class="text-xs text-[var(--cv-muted-text)]">
+      <p class="text-xs text-cv-muted">
         Accepted: .md files up to 5 MB
       </p>
     </div>
 
     <div
       v-else
-      class="rounded-xl border border-[var(--cv-teal-accent)] bg-[var(--cv-surface)] py-4 px-6 flex items-center justify-between gap-3"
+      class="rounded-xl border border-cv-teal bg-cv-surface py-4 px-6 flex items-center justify-between gap-3"
     >
       <div class="flex items-center gap-3 min-w-0">
         <span
@@ -231,30 +231,30 @@ async function retryConversion() {
           aria-hidden="true"
         >📄</span>
         <div class="flex flex-col gap-0.5 min-w-0">
-          <span class="text-sm font-bold truncate text-[var(--cv-body-text)]">{{ file.name }}</span>
-          <span class="text-xs text-[var(--cv-muted-text)]">{{ formatBytes(file.size) }}</span>
+          <span class="text-sm font-bold truncate text-cv-body">{{ file.name }}</span>
+          <span class="text-xs text-cv-muted">{{ formatBytes(file.size) }}</span>
         </div>
       </div>
       <button
         type="button"
-        class="shrink-0 text-sm font-bold text-[var(--cv-error-red)] hover:underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-error-red)]"
+        class="shrink-0 text-sm font-bold text-cv-error hover:underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cv-error"
         @click="setFile(null)"
       >
         Remove
       </button>
     </div>
 
-    <div class="flex items-center justify-between rounded-lg border border-[var(--cv-divider-gray)] bg-[var(--cv-surface)] px-4 py-3">
+    <div class="flex items-center justify-between rounded-lg border border-cv-divider bg-cv-surface px-4 py-3">
       <div class="flex flex-col gap-0.5">
-        <span class="text-sm font-bold text-[var(--cv-body-text)]">Include header image</span>
-        <span class="text-xs text-[var(--cv-muted-text)]">Add the company banner to the top of the PDF</span>
+        <span class="text-sm font-bold text-cv-body">Include header image</span>
+        <span class="text-xs text-cv-muted">Add the company banner to the top of the PDF</span>
       </div>
       <button
         type="button"
         role="switch"
         :aria-checked="includeHeader"
-        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cv-teal-accent)]"
-        :class="includeHeader ? 'bg-[var(--cv-teal-accent)]' : 'bg-[var(--cv-divider-gray)]'"
+        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cv-teal"
+        :class="includeHeader ? 'bg-cv-teal' : 'bg-cv-divider'"
         @click="includeHeader = !includeHeader"
       >
         <span
@@ -267,7 +267,7 @@ async function retryConversion() {
     <UButton
       block
       size="lg"
-      class="h-12 justify-center !rounded-lg !bg-[var(--cv-teal-accent)] !text-white hover:!brightness-95 disabled:!opacity-100"
+      class="h-12 justify-center !rounded-lg !bg-cv-teal !text-white hover:!brightness-95 disabled:!opacity-100"
       :class="ctaOpacityClass"
       :disabled="ctaDisabled"
       @click="convert"
@@ -280,57 +280,57 @@ async function retryConversion() {
       class="flex flex-col gap-1 pl-2 w-full"
     >
       <div class="flex items-center gap-3">
-        <span class="text-sm font-bold text-[var(--cv-success-green)] w-5 shrink-0">✓</span>
-        <span class="text-sm text-[var(--cv-success-green)]">File uploaded</span>
+        <span class="text-sm font-bold text-cv-success w-5 shrink-0">✓</span>
+        <span class="text-sm text-cv-success">File uploaded</span>
       </div>
       <div class="flex pl-[7px]">
         <div
           class="w-px h-6 shrink-0"
-          :class="remoteStatus === 'pending' ? 'bg-[var(--cv-divider-gray)]' : 'bg-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'pending' ? 'bg-cv-divider' : 'bg-cv-success'"
         />
       </div>
       <div class="flex items-center gap-3">
         <span
           class="text-sm w-5 shrink-0 text-center font-bold"
-          :class="remoteStatus === 'pending' ? 'text-[var(--cv-body-text)]' : 'text-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'pending' ? 'text-cv-body' : 'text-cv-success'"
         >{{ remoteStatus === 'pending' ? '⟳' : '✓' }}</span>
         <span
           class="text-sm"
-          :class="remoteStatus === 'pending' ? 'text-[var(--cv-body-text)]' : 'text-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'pending' ? 'text-cv-body' : 'text-cv-success'"
         >{{ remoteStatus === 'pending' ? 'AI is parsing your CV…' : 'AI parsed your CV' }}</span>
       </div>
       <div class="flex pl-[7px]">
         <div
           class="w-px h-6 shrink-0"
-          :class="remoteStatus === 'pending' ? 'bg-[var(--cv-divider-gray)]' : 'bg-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'pending' ? 'bg-cv-divider' : 'bg-cv-success'"
         />
       </div>
       <div class="flex items-center gap-3">
         <span
           class="text-sm w-5 shrink-0 text-center font-bold"
-          :class="remoteStatus === 'processing' ? 'text-[var(--cv-body-text)]' : remoteStatus === 'pending' ? 'text-[var(--cv-divider-gray)]' : 'text-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'processing' ? 'text-cv-body' : remoteStatus === 'pending' ? 'text-cv-divider' : 'text-cv-success'"
         >{{ remoteStatus === 'pending' ? '○' : remoteStatus === 'processing' ? '⟳' : '✓' }}</span>
         <span
           class="text-sm"
-          :class="remoteStatus === 'processing' ? 'text-[var(--cv-body-text)]' : remoteStatus === 'pending' ? 'text-[var(--cv-divider-gray)]' : 'text-[var(--cv-success-green)]'"
+          :class="remoteStatus === 'processing' ? 'text-cv-body' : remoteStatus === 'pending' ? 'text-cv-divider' : 'text-cv-success'"
         >{{ remoteStatus === 'processing' ? 'Generating PDF…' : 'Generating PDF' }}</span>
       </div>
       <div class="flex pl-[7px]">
-        <div class="w-px h-6 bg-[var(--cv-divider-gray)] shrink-0" />
+        <div class="w-px h-6 bg-cv-divider shrink-0" />
       </div>
       <div class="flex items-center gap-3">
-        <span class="text-sm w-5 shrink-0 text-center text-[var(--cv-divider-gray)]">○</span>
-        <span class="text-sm text-[var(--cv-divider-gray)]">Ready to download</span>
+        <span class="text-sm w-5 shrink-0 text-center text-cv-divider">○</span>
+        <span class="text-sm text-cv-divider">Ready to download</span>
       </div>
     </div>
 
     <div
       v-if="remoteStatus === 'completed' && downloadUrl"
-      class="rounded-xl border border-[var(--cv-success-green)] bg-[var(--cv-success-bg)] p-6 flex flex-col gap-4"
+      class="rounded-xl border border-cv-success bg-cv-success-bg p-6 flex flex-col gap-4"
     >
       <div class="flex items-center gap-3">
-        <span class="text-xl font-bold text-[var(--cv-success-green)]">✓</span>
-        <p class="text-base font-bold text-[var(--cv-body-text)]">
+        <span class="text-xl font-bold text-cv-success">✓</span>
+        <p class="text-base font-bold text-cv-body">
           Your PDF is ready!
         </p>
       </div>
@@ -339,13 +339,13 @@ async function retryConversion() {
           :to="downloadUrl"
           target="_blank"
           external
-          class="h-10 justify-center !rounded-lg !bg-[var(--cv-teal-accent)] !text-white text-sm font-bold px-6 flex-1"
+          class="h-10 justify-center !rounded-lg !bg-cv-teal !text-white text-sm font-bold px-6 flex-1"
         >
           Download PDF
         </UButton>
         <button
           type="button"
-          class="h-10 rounded-lg border border-[var(--cv-primary-dark)] text-sm font-bold text-[var(--cv-primary-dark)] px-6 flex-1 hover:bg-[var(--cv-teal-subtle-bg)] transition-colors"
+          class="h-10 rounded-lg border border-cv-primary text-sm font-bold text-cv-primary px-6 flex-1 hover:bg-cv-teal-subtle transition-colors"
           @click="resetConversion"
         >
           Convert Another
@@ -355,28 +355,28 @@ async function retryConversion() {
 
     <div
       v-if="errorMessage"
-      class="rounded-xl border border-[var(--cv-error-red)] bg-[var(--cv-error-bg)] p-6 flex flex-col gap-3"
+      class="rounded-xl border border-cv-error bg-cv-error-bg p-6 flex flex-col gap-3"
     >
       <div class="flex items-center gap-3">
-        <span class="text-xl font-bold text-[var(--cv-error-red)]">✕</span>
-        <p class="text-base font-bold text-[var(--cv-body-text)]">
+        <span class="text-xl font-bold text-cv-error">✕</span>
+        <p class="text-base font-bold text-cv-body">
           Conversion failed
         </p>
       </div>
-      <p class="text-sm text-[var(--cv-error-red)]">
+      <p class="text-sm text-cv-error">
         {{ errorMessage }}
       </p>
       <div class="flex flex-col sm:flex-row gap-3 pt-1">
         <UButton
           v-if="file"
-          class="h-10 justify-center !rounded-lg !bg-[var(--cv-primary-dark)] !text-white text-sm font-bold px-6 flex-1"
+          class="h-10 justify-center !rounded-lg !bg-cv-primary !text-white text-sm font-bold px-6 flex-1"
           @click="retryConversion"
         >
           Retry
         </UButton>
         <button
           type="button"
-          class="h-10 rounded-lg border border-[var(--cv-primary-dark)] text-sm font-bold text-[var(--cv-primary-dark)] px-6 flex-1 hover:bg-white/80 transition-colors"
+          class="h-10 rounded-lg border border-cv-primary text-sm font-bold text-cv-primary px-6 flex-1 hover:bg-white/80 transition-colors"
           @click="resetConversion"
         >
           Upload New File

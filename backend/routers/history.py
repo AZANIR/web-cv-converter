@@ -1,6 +1,8 @@
 import logging
+from math import ceil
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from supabase import Client
 
 from core.auth import get_current_user
 from core.supabase import get_supabase
@@ -23,28 +25,56 @@ def _remove_storage_paths(sb, paths: list[str]) -> None:
         try:
             sb.storage.from_(BUCKET).remove(batch)
         except Exception:
-            logger.exception("Storage remove failed for %s objects", len(batch))
+            logger.exception(
+                "Storage remove failed for %s objects in bucket %r",
+                len(batch),
+                BUCKET,
+            )
 
 
 @router.get("/history")
-async def list_history(user: dict = Depends(get_current_user)):
-    sb = get_supabase()
+async def list_history(
+    user: dict = Depends(get_current_user),
+    page: int = Query(1, ge=1, description="Page number (1-based)"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    sb: Client = Depends(get_supabase),
+):
+    offset = (page - 1) * per_page
+
+    # Fetch total count
+    count_res = (
+        sb.table("conversions")
+        .select("id", count="exact")
+        .eq("user_id", user["user_id"])
+        .execute()
+    )
+    total: int = count_res.count or 0
+
+    # Fetch paginated page
     res = (
         sb.table("conversions")
         .select("id,original_filename,status,created_at,error_message")
         .eq("user_id", user["user_id"])
         .order("created_at", desc=True)
+        .range(offset, offset + per_page - 1)
         .execute()
     )
-    return {"items": res.data or []}
+
+    return {
+        "items": res.data or [],
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "pages": ceil(total / per_page) if total > 0 else 1,
+    }
 
 
 @router.get("/history/{conversion_id}/download")
 async def history_download(
     conversion_id: str,
     user: dict = Depends(get_current_user),
+    sb: Client = Depends(get_supabase),
 ):
-    sb = get_supabase()
     res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
@@ -62,8 +92,8 @@ async def history_download(
 async def delete_history_item(
     conversion_id: str,
     user: dict = Depends(get_current_user),
+    sb: Client = Depends(get_supabase),
 ):
-    sb = get_supabase()
     res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
@@ -78,8 +108,7 @@ async def delete_history_item(
 
 
 @router.delete("/history")
-async def delete_all_history(user: dict = Depends(get_current_user)):
-    sb = get_supabase()
+async def delete_all_history(user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     res = (
         sb.table("conversions")
         .select("pdf_storage_path")

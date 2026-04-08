@@ -149,3 +149,21 @@ ALTER TABLE prompts ENABLE ROW LEVEL SECURITY;
 
 -- Storage: in Dashboard create private bucket `cv-pdfs`, or via SQL (service role bypasses RLS for backend uploads):
 -- insert into storage.buckets (id, name, public) values ('cv-pdfs', 'cv-pdfs', false) on conflict (id) do nothing;
+
+-- Trigger function to keep updated_at current on row updates
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_updated_at_conversions BEFORE UPDATE ON conversions
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER set_updated_at_vacancies BEFORE UPDATE ON vacancies
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER set_updated_at_generated_cvs BEFORE UPDATE ON generated_cvs
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER set_updated_at_prompts BEFORE UPDATE ON prompts
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();

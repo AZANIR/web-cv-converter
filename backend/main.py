@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import FastAPI
@@ -23,10 +24,10 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health():
+async def health():
     try:
         sb = get_supabase()
-        sb.table("profiles").select("id").limit(1).execute()
+        await asyncio.to_thread(lambda: sb.table("profiles").select("id").limit(1).execute())
         db_status = "ok"
     except Exception:
         db_status = "error"

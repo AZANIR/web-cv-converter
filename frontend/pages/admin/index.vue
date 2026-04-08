@@ -111,17 +111,17 @@ async function confirmRemove() {
 
 <template>
   <div class="max-w-[800px] mx-auto px-4 md:px-8 py-8 md:py-10 space-y-6">
-    <h1 class="text-[1.75rem] font-bold text-[var(--cv-primary-dark)] leading-tight">
+    <h1 class="text-[1.75rem] font-bold text-cv-primary leading-tight">
       Admin Panel
     </h1>
 
-    <div class="flex gap-0 border-b border-[var(--cv-divider-gray)]">
+    <div class="flex gap-0 border-b border-cv-divider">
       <button
         type="button"
         class="px-5 py-2.5 text-sm -mb-px transition-colors"
         :class="tab === 'access'
-          ? 'border-b-2 border-[var(--cv-teal-accent)] text-[var(--cv-teal-accent)] font-bold'
-          : 'text-[var(--cv-muted-text)] font-normal'"
+          ? 'border-b-2 border-cv-teal text-cv-teal font-bold'
+          : 'text-cv-muted font-normal'"
         @click="tab = 'access'"
       >
         Access Management
@@ -130,8 +130,8 @@ async function confirmRemove() {
         type="button"
         class="px-5 py-2.5 text-sm -mb-px transition-colors"
         :class="tab === 'conversions'
-          ? 'border-b-2 border-[var(--cv-teal-accent)] text-[var(--cv-teal-accent)] font-bold'
-          : 'text-[var(--cv-muted-text)] font-normal'"
+          ? 'border-b-2 border-cv-teal text-cv-teal font-bold'
+          : 'text-cv-muted font-normal'"
         @click="tab = 'conversions'"
       >
         All Conversions
@@ -140,7 +140,7 @@ async function confirmRemove() {
 
     <div v-if="tab === 'access'">
       <div class="space-y-3 mb-6">
-        <p class="text-base font-bold text-[var(--cv-body-text)]">
+        <p class="text-base font-bold text-cv-body">
           Add New Access
         </p>
         <div class="flex flex-col lg:flex-row gap-2">
@@ -161,7 +161,7 @@ async function confirmRemove() {
           />
           <UButton
             :loading="busy"
-            class="!bg-[var(--cv-teal-accent)] !text-white shrink-0 h-10 px-6 !rounded-lg text-sm font-bold justify-center"
+            class="!bg-cv-teal !text-white shrink-0 h-10 px-6 !rounded-lg text-sm font-bold justify-center"
             @click="addEmail"
           >
             Add
@@ -171,11 +171,11 @@ async function confirmRemove() {
 
       <div class="space-y-2">
         <div class="flex items-center gap-2 flex-wrap">
-          <p class="text-base font-bold text-[var(--cv-body-text)]">
+          <p class="text-base font-bold text-cv-body">
             Allowed Users
           </p>
           <span
-            class="inline-flex items-center rounded-full bg-[var(--cv-teal-accent)] text-white text-xs font-bold px-2 py-0.5 min-w-[1.5rem] justify-center"
+            class="inline-flex items-center rounded-full bg-cv-teal text-white text-xs font-bold px-2 py-0.5 min-w-[1.5rem] justify-center"
           >{{ emails.length }}</span>
         </div>
 
@@ -189,10 +189,10 @@ async function confirmRemove() {
 
         <div
           v-else
-          class="rounded-lg border border-[var(--cv-divider-gray)] overflow-hidden bg-[var(--cv-surface)]"
+          class="rounded-lg border border-cv-divider overflow-hidden bg-cv-surface"
         >
           <table class="w-full text-sm">
-            <thead class="bg-[var(--cv-primary-dark)] text-left text-white">
+            <thead class="bg-cv-primary text-left text-white">
               <tr>
                 <th class="px-4 py-2.5 font-medium">
                   Email
@@ -207,18 +207,18 @@ async function confirmRemove() {
               <tr
                 v-for="row in emails"
                 :key="row.id"
-                class="border-t border-[var(--cv-divider-gray)]"
+                class="border-t border-cv-divider"
               >
-                <td class="px-4 py-3 text-[var(--cv-body-text)]">
+                <td class="px-4 py-3 text-cv-body">
                   {{ row.email }}
                 </td>
-                <td class="px-4 py-3 text-[var(--cv-muted-text)]">
+                <td class="px-4 py-3 text-cv-muted">
                   {{ row.note || '—' }}
                 </td>
                 <td class="px-4 py-3">
                   <button
                     type="button"
-                    class="text-xs font-bold text-[var(--cv-error-red)] hover:underline"
+                    class="text-xs font-bold text-cv-error hover:underline"
                     @click="deleteTarget = row; deleteOpen = true"
                   >
                     Remove
@@ -232,7 +232,7 @@ async function confirmRemove() {
     </div>
 
     <div v-else>
-      <p class="text-sm text-[var(--cv-muted-text)] mb-4">
+      <p class="text-sm text-cv-muted mb-4">
         Audit log of every conversion
       </p>
       <div
@@ -244,10 +244,10 @@ async function confirmRemove() {
       </div>
       <div
         v-else
-        class="rounded-lg border border-[var(--cv-divider-gray)] overflow-x-auto bg-[var(--cv-surface)]"
+        class="rounded-lg border border-cv-divider overflow-x-auto bg-cv-surface"
       >
         <table class="w-full text-sm min-w-[640px]">
-          <thead class="bg-[var(--cv-primary-dark)] text-left text-white">
+          <thead class="bg-cv-primary text-left text-white">
             <tr>
               <th class="px-4 py-2.5 font-medium">
                 User
@@ -267,9 +267,9 @@ async function confirmRemove() {
             <tr
               v-for="c in conversions"
               :key="c.id"
-              class="border-t border-[var(--cv-divider-gray)]"
+              class="border-t border-cv-divider"
             >
-              <td class="px-4 py-3 text-[var(--cv-body-text)]">
+              <td class="px-4 py-3 text-cv-body">
                 {{ c.user_email || c.user_id }}
               </td>
               <td class="px-4 py-3">
@@ -278,7 +278,7 @@ async function confirmRemove() {
               <td class="px-4 py-3">
                 <StatusBadge :status="mapStatus(c.status)" />
               </td>
-              <td class="px-4 py-3 text-[var(--cv-muted-text)] text-xs">
+              <td class="px-4 py-3 text-cv-muted text-xs">
                 {{ c.created_at ? new Date(c.created_at).toLocaleString() : '—' }}
               </td>
             </tr>
@@ -295,10 +295,10 @@ async function confirmRemove() {
         v-if="deleteTarget"
         class="p-6 space-y-4 w-full max-w-[420px]"
       >
-        <h2 class="text-lg font-semibold text-[var(--cv-primary-dark)]">
+        <h2 class="text-lg font-semibold text-cv-primary">
           Remove access
         </h2>
-        <p class="text-sm text-[var(--cv-body-text)]">
+        <p class="text-sm text-cv-body">
           Remove <strong>{{ deleteTarget.email }}</strong> from the allow list?
         </p>
         <div class="flex justify-end gap-2 pt-2">

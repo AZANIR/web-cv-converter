@@ -6,41 +6,41 @@ const isAdminGate = computed(() => route.query.reason === 'admin')
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[var(--cv-light-gray-bg)] p-4">
+  <div class="min-h-screen flex items-center justify-center bg-cv-light-gray p-4">
     <div
-      class="w-full max-w-[400px] rounded-xl bg-[var(--cv-surface)] p-8 flex flex-col items-center gap-6"
+      class="w-full max-w-[400px] rounded-xl bg-cv-surface p-8 flex flex-col items-center gap-6"
       style="box-shadow: var(--cv-card-shadow)"
     >
       <div
-        class="w-12 h-12 rounded-xl bg-[var(--cv-teal-accent)] flex items-center justify-center"
+        class="w-12 h-12 rounded-xl bg-cv-teal flex items-center justify-center"
       >
         <span class="text-white text-base font-bold">CV</span>
       </div>
       <div class="text-center w-full space-y-1">
-        <h1 class="text-2xl font-bold text-[var(--cv-primary-dark)]">
+        <h1 class="text-2xl font-bold text-cv-primary">
           CV Converter
         </h1>
-        <p class="text-base text-[var(--cv-muted-text)]">
+        <p class="text-base text-cv-muted">
           Sign in to access CV Converter
         </p>
       </div>
 
       <div
-        class="w-full rounded-lg border border-[var(--cv-error-red)] bg-[var(--cv-error-bg)] px-4 py-3"
+        class="w-full rounded-lg border border-cv-error bg-cv-error-bg px-4 py-3"
       >
         <p
           v-if="isAdminGate"
-          class="text-sm text-[var(--cv-error-red)] text-left"
+          class="text-sm text-cv-error text-left"
         >
           This area is for administrators only. Ask the operator to set
-          <code class="text-xs bg-[var(--cv-surface)] px-1 rounded border border-[var(--cv-divider-gray)]">profiles.role = 'admin'</code>
+          <code class="text-xs bg-cv-surface px-1 rounded border border-cv-divider">profiles.role = 'admin'</code>
           in Supabase, or add your email to
-          <code class="text-xs bg-[var(--cv-surface)] px-1 rounded border border-[var(--cv-divider-gray)]">ADMIN_EMAILS</code>
+          <code class="text-xs bg-cv-surface px-1 rounded border border-cv-divider">ADMIN_EMAILS</code>
           in the backend environment.
         </p>
         <p
           v-else
-          class="text-sm text-[var(--cv-error-red)]"
+          class="text-sm text-cv-error"
         >
           Access not allowed. Contact admin to get access.
         </p>
@@ -51,7 +51,7 @@ const isAdminGate = computed(() => route.query.reason === 'admin')
           v-if="isAdminGate"
           to="/dashboard"
           block
-          class="h-12 !rounded-lg border border-[var(--cv-divider-gray)] !bg-[var(--cv-surface)] !text-[var(--cv-body-text)]"
+          class="h-12 !rounded-lg border border-cv-divider !bg-cv-surface !text-cv-body"
         >
           Back to dashboard
         </UButton>
@@ -59,13 +59,13 @@ const isAdminGate = computed(() => route.query.reason === 'admin')
           to="/api/auth/logout"
           external
           block
-          class="h-12 !rounded-lg border border-[var(--cv-divider-gray)] !bg-[var(--cv-surface)] !text-[var(--cv-body-text)]"
+          class="h-12 !rounded-lg border border-cv-divider !bg-cv-surface !text-cv-body"
         >
           Sign out
         </UButton>
       </div>
 
-      <p class="text-xs italic text-[var(--cv-muted-text)]">
+      <p class="text-xs italic text-cv-muted">
         Access by invitation only
       </p>
     </div>

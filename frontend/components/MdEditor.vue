@@ -65,11 +65,11 @@ onUnmounted(() => {
 
 <template>
   <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--cv-divider-gray)] bg-[var(--cv-surface)]">
-      <div class="flex items-center gap-4 text-sm text-[var(--cv-muted-text)]">
-        <span class="font-bold text-[var(--cv-body-text)]">Markdown</span>
+    <div class="flex items-center justify-between px-4 py-2 border-b border-cv-divider bg-cv-surface">
+      <div class="flex items-center gap-4 text-sm text-cv-muted">
+        <span class="font-bold text-cv-body">Markdown</span>
         <span class="hidden sm:inline">|</span>
-        <span class="hidden sm:inline font-bold text-[var(--cv-body-text)]">Preview</span>
+        <span class="hidden sm:inline font-bold text-cv-body">Preview</span>
       </div>
       <div class="flex items-center gap-3">
         <Transition
@@ -88,7 +88,7 @@ onUnmounted(() => {
         <button
           v-if="!readonly"
           type="button"
-          class="text-sm font-bold text-[var(--cv-teal-accent)] hover:underline underline-offset-2"
+          class="text-sm font-bold text-cv-teal hover:underline underline-offset-2"
           @click="saveNow"
         >
           Save
@@ -97,18 +97,18 @@ onUnmounted(() => {
     </div>
 
     <div class="flex flex-1 min-h-0">
-      <div class="w-1/2 border-r border-[var(--cv-divider-gray)] flex flex-col">
+      <div class="w-1/2 border-r border-cv-divider flex flex-col">
         <textarea
           :value="localContent"
           :readonly="readonly"
-          class="flex-1 p-4 resize-none font-mono text-sm leading-relaxed text-[var(--cv-body-text)] bg-[var(--cv-surface)] outline-none"
+          class="flex-1 p-4 resize-none font-mono text-sm leading-relaxed text-cv-body bg-cv-surface outline-none"
           placeholder="Markdown content..."
           @input="onInput"
         />
       </div>
       <div class="w-1/2 flex flex-col">
         <div
-          class="flex-1 p-4 overflow-y-auto text-sm leading-relaxed text-[var(--cv-body-text)] prose prose-sm max-w-none"
+          class="flex-1 p-4 overflow-y-auto text-sm leading-relaxed text-cv-body prose prose-sm max-w-none"
           v-html="renderedHtml"
         />
       </div>

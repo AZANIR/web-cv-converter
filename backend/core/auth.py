@@ -1,6 +1,5 @@
-from functools import lru_cache
-
 import httpx
+from cachetools import TTLCache
 from fastapi import Depends, Header, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt, jwk
@@ -10,14 +9,17 @@ from .supabase import get_supabase
 
 security = HTTPBearer(auto_error=False)
 
+_jwks_cache: TTLCache = TTLCache(maxsize=1, ttl=3600)
 
-@lru_cache(maxsize=1)
+
 def _jwks_json(domain: str) -> dict:
-    url = f"https://{domain}/.well-known/jwks.json"
-    with httpx.Client(timeout=10.0) as client:
-        r = client.get(url)
-        r.raise_for_status()
-        return r.json()
+    if domain not in _jwks_cache:
+        url = f"https://{domain}/.well-known/jwks.json"
+        with httpx.Client(timeout=10.0) as client:
+            r = client.get(url)
+            r.raise_for_status()
+            _jwks_cache[domain] = r.json()
+    return _jwks_cache[domain]
 
 
 def _get_signing_key(token: str, domain: str):
