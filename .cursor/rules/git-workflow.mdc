@@ -1,6 +1,8 @@
 ---
 description: Git branching strategy and Conventional Commits for web-cv-converter
 alwaysApply: true
+relatedRules:
+  - authorship.mdc
 ---
 
 # Git Workflow
@@ -77,3 +79,5 @@ docs(db): document Supabase RLS policies
 - Max 72 characters on first line
 - No period at end
 - Body explains WHY, not what (the diff shows what)
+- **NEVER include AI model names, versions, or `Co-Authored-By: AI` footers** (e.g., no "Claude Sonnet", "GPT-4", "Co-Authored-By: noreply@anthropic.com")
+- Commits are authored by humans; AI assistance is implicit

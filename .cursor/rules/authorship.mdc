@@ -1,0 +1,59 @@
+---
+description: Authorship and attribution rules
+alwaysApply: true
+---
+
+# Authorship & Attribution
+
+## Commit Messages
+
+- **NEVER include AI model names** in commit messages (e.g., "Claude Sonnet 4.6", "GPT-4")
+- **NEVER add `Co-Authored-By: AI` footers** (e.g., `Co-Authored-By: Claude Sonnet <noreply@anthropic.com>`)
+- Commits are authored by the human developer
+- AI assistance is implicit in the development process
+
+### ✅ Correct
+```
+feat(backend): add rate limiting to convert endpoint
+```
+
+### ❌ Wrong
+```
+feat(backend): add rate limiting to convert endpoint
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+```
+
+## Pull Request Descriptions
+
+- Use plain, professional language
+- Focus on **what** was changed and **why**
+- Avoid mentioning AI tools, models, or assistants
+- Do not include AI attribution or model credits
+
+### ✅ Correct PR Summary
+```
+## Summary
+Added persistent rate limiting via Supabase conversions table
+to replace the in-memory dictionary implementation.
+```
+
+### ❌ Wrong PR Summary
+```
+## Summary
+Used Claude Sonnet to refactor rate limiting...
+Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+## Documentation & Code Comments
+
+- Comments and docs should be authored-neutral
+- Avoid mentioning AI tools or models
+- Example: `// Handle edge case` instead of `// Claude suggested handling this edge case`
+
+## Team Communication
+
+When discussing implementation internally:
+- Focus on technical decisions and trade-offs
+- Mention tools/processes objectively if relevant (e.g., "used automated testing")
+- Omit AI model names from discussions
