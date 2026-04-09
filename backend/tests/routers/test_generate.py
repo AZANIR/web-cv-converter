@@ -6,8 +6,14 @@ import pytest
 
 
 @patch("routers.generate.schedule_generation")
-async def test_generate_with_text(mock_schedule, client, mock_supabase):
-    mock_supabase.execute.return_value = MagicMock(data=[])
+@patch("routers.generate.check_and_record_conversion")
+async def test_generate_with_text(mock_check_rate, mock_schedule, client, mock_supabase):
+    mock_supabase.table.return_value = mock_supabase
+    mock_supabase.insert.return_value = mock_supabase
+    
+    vacancy_result = MagicMock(data=[{"id": "vac-123"}])
+    cv_result = MagicMock(data=[{"id": "cv-123"}])
+    mock_supabase.execute.side_effect = [vacancy_result, cv_result]
 
     resp = await client.post(
         "/api/generate",
@@ -22,9 +28,15 @@ async def test_generate_with_text(mock_schedule, client, mock_supabase):
 
 @patch("routers.generate.schedule_generation")
 @patch("routers.generate.vacancy_parser")
-async def test_generate_with_file(mock_parser, mock_schedule, client, mock_supabase):
+@patch("routers.generate.check_and_record_conversion")
+async def test_generate_with_file(mock_check_rate, mock_parser, mock_schedule, client, mock_supabase):
     mock_parser.extract_text_from_file.return_value = "parsed file content"
-    mock_supabase.execute.return_value = MagicMock(data=[])
+    mock_supabase.table.return_value = mock_supabase
+    mock_supabase.insert.return_value = mock_supabase
+    
+    vacancy_result = MagicMock(data=[{"id": "vac-123"}])
+    cv_result = MagicMock(data=[{"id": "cv-123"}])
+    mock_supabase.execute.side_effect = [vacancy_result, cv_result]
 
     resp = await client.post(
         "/api/generate",
@@ -101,10 +113,18 @@ async def test_update_cv_md(mock_embed, client, mock_supabase):
 
 
 @patch("routers.generate.schedule_conversion")
-async def test_convert_cv_to_pdf(mock_schedule, client, mock_supabase):
+@patch("routers.generate.check_and_record_conversion")
+async def test_convert_cv_to_pdf(mock_check_rate, mock_schedule, client, mock_supabase):
     from tests.conftest import FAKE_USER
 
-    mock_supabase.execute.return_value = MagicMock(data=[{
+    mock_supabase.table.return_value = mock_supabase
+    mock_supabase.select.return_value = mock_supabase
+    mock_supabase.eq.return_value = mock_supabase
+    mock_supabase.limit.return_value = mock_supabase
+    mock_supabase.insert.return_value = mock_supabase
+    mock_supabase.update.return_value = mock_supabase
+    
+    cv_result = MagicMock(data=[{
         "id": "cv-1",
         "user_id": FAKE_USER["user_id"],
         "vacancy_id": "vac-1",
@@ -114,6 +134,8 @@ async def test_convert_cv_to_pdf(mock_schedule, client, mock_supabase):
         "error_message": None,
         "pdf_storage_path": None,
     }])
+    # Three execute calls: select, insert, update
+    mock_supabase.execute.side_effect = [cv_result, MagicMock(), MagicMock()]
 
     resp = await client.post(
         "/api/generate/cv-1/convert",
@@ -123,6 +145,7 @@ async def test_convert_cv_to_pdf(mock_schedule, client, mock_supabase):
     data = resp.json()
     assert "conversion_id" in data
     mock_schedule.assert_called_once()
+    mock_check_rate.assert_called_once()
 
 
 @patch("routers.generate.schedule_conversion")

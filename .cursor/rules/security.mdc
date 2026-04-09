@@ -1,0 +1,62 @@
+---
+description: OWASP security guardrails for web-cv-converter (FastAPI + Nuxt 3)
+globs: "backend/**,frontend/**"
+alwaysApply: false
+---
+
+# Security Guardrails
+
+## Secrets Policy
+
+- NEVER hardcode secrets, API keys, or tokens in any file.
+- Read all secrets via `get_settings()` (backend) or `useRuntimeConfig()` (frontend).
+- Add `.env`, `.env.local`, `.env.production` to `.gitignore`.
+- Environment variable names are safe to document; their values are not.
+
+## Backend — FastAPI / Auth0 / Supabase
+
+### Authentication
+- Every non-public endpoint MUST use `Depends(get_current_user)` from `core/auth.py`.
+- Admin endpoints MUST use `Depends(require_admin)` from `core/auth.py`.
+- Never bypass auth by checking `user_id` inline — always use the dependency.
+- Auth0 JWT validated with RS256 against `https://{domain}/.well-known/jwks.json`.
+
+### Input Validation
+- All request bodies validated via Pydantic v2 models — never accept raw `dict`.
+- Path and query parameters use FastAPI type annotations with constraints where applicable.
+- File uploads: validate MIME type and size before processing.
+
+### SQL / Supabase
+- All DB access via `get_supabase()` — use parameterized Supabase SDK calls only.
+- Never construct SQL strings with f-strings or `.format()`.
+- RLS policies required on every table — document in `backend/supabase/schema.sql`.
+- Service role key only used server-side via `get_supabase()` — never expose to client.
+
+### OWASP Top 10 Checklist (FastAPI context)
+- [ ] A01 Broken Access Control — auth dependency on every protected route
+- [ ] A02 Cryptographic Failures — no secrets in code; HTTPS enforced by Caddy
+- [ ] A03 Injection — Supabase SDK parameterized calls only; no raw SQL
+- [ ] A04 Insecure Design — rate limiting on AI-heavy endpoints via `services/rate_limit.py`
+- [ ] A05 Security Misconfiguration — CORS origins restricted in `main.py`
+- [ ] A06 Vulnerable Components — check `requirements.txt` for known CVEs before release
+- [ ] A07 Auth Failures — JWT RS256, audience + issuer validated in `core/auth.py`
+- [ ] A08 Software Integrity — no unverified npm/pip packages
+- [ ] A09 Logging — `logging.basicConfig` in `main.py`; never log JWT tokens or PII
+- [ ] A10 SSRF — validate all URLs before making outbound HTTP calls
+
+## Frontend — Nuxt 3
+
+### Auth
+- Session managed by `nuxt-auth-utils` — never store tokens in `localStorage`.
+- Use `useUserSession()` composable to check auth state.
+- Protect routes via `frontend/middleware/auth.ts`.
+
+### XSS Prevention
+- Never use `v-html` with user-supplied content.
+- All user-provided text rendered via template interpolation `{{ }}` (auto-escaped by Vue).
+- Content Security Policy headers set by Caddy — do not override.
+
+### API Calls
+- Always use `useApi.ts` composable for backend calls — it attaches auth headers.
+- Never call the backend directly with `fetch()` or `$fetch()` in components.
+- Never expose `NUXT_OAUTH_*` secrets in public runtime config.

@@ -3,3 +3,11 @@ __pycache__
 .env
 venv
 .git
+tests/
+.pytest_cache/
+.hypothesis/
+.coverage
+coverage.xml
+*.egg-info/
+dist/
+build/

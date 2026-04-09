@@ -20,15 +20,15 @@ onMounted(async () => {
 function linkClass(path: string) {
   const active = route.path === path || route.path.startsWith(`${path}/`)
   return active
-    ? 'text-[var(--cv-teal-accent)] font-bold'
-    : 'text-[var(--cv-muted-text)] font-normal'
+    ? 'text-cv-teal font-bold'
+    : 'text-cv-muted font-normal'
 }
 
 function mobileLinkClass(path: string) {
   const active = route.path === path || route.path.startsWith(`${path}/`)
   return active
-    ? 'flex items-center h-12 px-4 bg-[var(--cv-teal-subtle-bg)] text-[var(--cv-teal-accent)] font-bold text-sm'
-    : 'flex items-center h-12 px-4 text-sm text-[var(--cv-muted-text)]'
+    ? 'flex items-center h-12 px-4 bg-cv-teal-subtle text-cv-teal font-bold text-sm'
+    : 'flex items-center h-12 px-4 text-sm text-cv-muted'
 }
 
 async function logout() {
@@ -39,12 +39,12 @@ async function logout() {
 
 <template>
   <header
-    class="cv-nav-border sticky top-0 z-40 bg-[var(--cv-surface)] h-14 px-4 md:px-8 flex items-center justify-between"
+    class="cv-nav-border sticky top-0 z-40 bg-cv-surface h-14 px-4 md:px-8 flex items-center justify-between"
   >
     <div class="flex items-center gap-1">
       <NuxtLink
         to="/dashboard"
-        class="text-[var(--cv-primary-dark)] font-bold text-lg leading-none"
+        class="text-cv-primary font-bold text-lg leading-none"
       >
         CV Converter
       </NuxtLink>
@@ -96,7 +96,7 @@ async function logout() {
       >
         Prompts
       </NuxtLink>
-      <div class="w-px h-6 bg-[var(--cv-divider-gray)] shrink-0" aria-hidden="true" />
+      <div class="w-px h-6 bg-cv-divider shrink-0" aria-hidden="true" />
       <div class="flex items-center gap-2">
         <img
           v-if="user?.picture"
@@ -106,13 +106,13 @@ async function logout() {
         >
         <span
           v-else
-          class="w-8 h-8 rounded-full bg-[var(--cv-teal-accent)] shrink-0"
+          class="w-8 h-8 rounded-full bg-cv-teal shrink-0"
         />
-        <span class="text-[var(--cv-muted-text)] text-sm">▾</span>
+        <span class="text-cv-muted text-sm">▾</span>
       </div>
       <button
         type="button"
-        class="text-sm font-medium text-[var(--cv-primary-dark)] hover:underline underline-offset-2 px-1"
+        class="text-sm font-medium text-cv-primary hover:underline underline-offset-2 px-1"
         @click="logout"
       >
         Log out
@@ -122,7 +122,7 @@ async function logout() {
     <!-- Mobile -->
     <button
       type="button"
-      class="md:hidden p-2 -mr-2 text-[var(--cv-body-text)]"
+      class="md:hidden p-2 -mr-2 text-cv-body"
       aria-label="Menu"
       @click="menuOpen = !menuOpen"
     >
@@ -136,7 +136,7 @@ async function logout() {
   <!-- Mobile drawer -->
   <div
     v-if="menuOpen"
-    class="md:hidden fixed inset-0 top-14 z-30 bg-[var(--cv-surface)] border-t border-[var(--cv-divider-gray)] flex flex-col"
+    class="md:hidden fixed inset-0 top-14 z-30 bg-cv-surface border-t border-cv-divider flex flex-col"
   >
     <NuxtLink
       to="/dashboard"
@@ -182,9 +182,9 @@ async function logout() {
     >
       Prompts
     </NuxtLink>
-    <div class="h-px bg-[var(--cv-divider-gray)] my-2" />
+    <div class="h-px bg-cv-divider my-2" />
     <div class="px-4 py-3 flex flex-col gap-2">
-      <div class="flex items-center gap-2 text-sm text-[var(--cv-muted-text)]">
+      <div class="flex items-center gap-2 text-sm text-cv-muted">
         <img
           v-if="user?.picture"
           :src="user.picture"

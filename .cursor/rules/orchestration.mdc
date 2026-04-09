@@ -1,0 +1,80 @@
+---
+description: Multi-agent routing, task chains, handoff protocol, and conflict rules
+alwaysApply: true
+---
+
+# Agent Orchestration
+
+## Task Classification
+
+The Orchestrator classifies every incoming request before routing. Task type is the single source of truth for ownership.
+
+| Task Type | Owner Agent | Natural Language Examples |
+|---|---|---|
+| `write:frontend` | frontend | "add a page", "fix this component", "update the nav" |
+| `write:backend` | backend | "add an endpoint", "update the schema", "add a service" |
+| `write:docs` | document | "update the API contract", "write an ADR", "document this" |
+| `write:tests` | tester | "write tests for", "add coverage for", "test this" |
+| `review` | code-reviewer | "review my changes", "audit this file", "check for issues" |
+| `chain:*` | orchestrator (routes) | `@orchestrator chain:<name>` |
+| `memory:*` | memory-keeper | "what bugs do we know", "init qa memory", "log this decision" |
+
+**Rule:** "write" tasks → domain agent first, then code-reviewer. "review/audit" tasks → code-reviewer only. Two agents never run in parallel on the same file.
+
+## Explicit Agent Invocation
+
+Use `@<agent-name>` to invoke a specific agent directly:
+- `@orchestrator chain:api-feature` — run the api-feature chain
+- `@backend add a rate-limit endpoint` — route directly to backend agent
+- `@tester write pytest for convert router` — route directly to tester agent
+- `@memory-keeper init` — initialize QA memory
+- `@code-reviewer audit backend/routers/convert.py` — direct review
+
+## Predefined Chains
+
+| Chain | Command | Flow |
+|---|---|---|
+| **feature** | `@orchestrator chain:feature` | document → backend → frontend → code-reviewer → tester → memory-keeper |
+| **api-feature** | `@orchestrator chain:api-feature` | document → backend → code-reviewer → tester (pytest) → memory-keeper |
+| **ui-feature** | `@orchestrator chain:ui-feature` | document → frontend → code-reviewer → tester (vitest + playwright) → memory-keeper |
+| **review-only** | `@orchestrator chain:review` | code-reviewer → memory-keeper |
+| **stabilize** | `@orchestrator chain:stabilize` | tester (flaky detection) → code-reviewer → memory-keeper |
+
+See `.cursor/agents/orchestrator/references/chains.md` for per-chain input/output contracts.
+
+## Handoff Protocol
+
+Each agent passes a structured handoff object to the next agent in the chain:
+
+```yaml
+handoff:
+  from: <agent-name>          # who produced this
+  to: <agent-name>            # who receives it next
+  artifacts:
+    - path: <file-path>
+      type: implementation | spec | test | report | migration
+  context:
+    feature: <feature-name>
+    chain: <chain-name>
+    blocking_issues: []       # non-empty = Orchestrator halts chain
+```
+
+**Blocking behavior:** If `blocking_issues` is non-empty after code-reviewer runs, the Orchestrator surfaces the issues to the user and halts the chain. The user must resolve and re-run from the blocking step.
+
+## Conflict Resolution
+
+Single rule — task type decides:
+- "write endpoint validation" → `write:backend` → backend implements → code-reviewer audits
+- "review the validation" → `review` → code-reviewer only
+
+Memory Keeper always runs last in every chain, never skipped.
+
+## Memory Keeper Auto-Trigger
+
+After every completed chain, Memory Keeper receives the chain summary and:
+1. Classifies entries (bugs found, decisions made, tests written)
+2. Appends to the relevant `docs/qa-memory/*.md` file
+3. Updates `_index.md`
+4. Updates `memory-bank/activeContext.md` and `memory-bank/progress.md`
+
+See `.cursor/agents/memory-keeper/references/auto-update-protocol.md` for the full protocol.

@@ -10,7 +10,7 @@ else {
 </script>
 
 <template>
-  <div class="p-8 text-center text-[var(--cv-muted-text)]">
+  <div class="p-8 text-center text-cv-muted">
     Redirecting…
   </div>
 </template>

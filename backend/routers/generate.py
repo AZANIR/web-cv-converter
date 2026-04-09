@@ -1,8 +1,10 @@
 """API endpoints for CV generation from vacancy input."""
 
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from supabase import Client
 
 from core.auth import get_current_user
 from core.config import get_settings
@@ -11,6 +13,8 @@ from services.conversion_runner import schedule_conversion
 from services.generation_runner import schedule_generation
 from services.rate_limit import check_and_record_conversion
 from services import vacancy_parser, embedding_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
@@ -21,12 +25,13 @@ async def generate_cv(
     vacancy_url: str = Form(None),
     file: UploadFile | None = File(None),
     user: dict = Depends(get_current_user),
+    sb: Client = Depends(get_supabase),
 ):
     """Create a CV from a vacancy. Accepts text, URL, or file upload."""
     if not vacancy_text and not vacancy_url and not file:
         raise HTTPException(status_code=400, detail="Provide vacancy_text, vacancy_url, or a file")
 
-    check_and_record_conversion(user["user_id"])
+    check_and_record_conversion(user["user_id"], sb)
 
     # Determine raw input and input_type
     raw_input = ""
@@ -50,8 +55,6 @@ async def generate_cv(
 
     if not raw_input:
         raise HTTPException(status_code=400, detail="Empty vacancy input")
-
-    sb = get_supabase()
 
     vacancy_id = str(uuid.uuid4())
     sb.table("vacancies").insert({
@@ -77,8 +80,7 @@ async def generate_cv(
 
 
 @router.get("/history")
-async def generation_history(user: dict = Depends(get_current_user)):
-    sb = get_supabase()
+async def generation_history(user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     res = (
         sb.table("generated_cvs")
         .select("id,vacancy_id,status,pdf_filename,created_at,error_message")
@@ -110,8 +112,7 @@ async def generation_history(user: dict = Depends(get_current_user)):
 
 
 @router.get("/{cv_id}")
-async def get_generated_cv(cv_id: str, user: dict = Depends(get_current_user)):
-    sb = get_supabase()
+async def get_generated_cv(cv_id: str, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     res = sb.table("generated_cvs").select("*").eq("id", cv_id).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
@@ -134,16 +135,19 @@ async def get_generated_cv(cv_id: str, user: dict = Depends(get_current_user)):
 
         try:
             out["download_url"] = storage_service.get_signed_url(row["pdf_storage_path"])
-        except Exception:
+        except Exception as e:
+            logger.warning(
+                "Failed to get download_url for cv_id=%s path=%s: %s",
+                cv_id, row["pdf_storage_path"], e, exc_info=True,
+            )
             out["download_url"] = None
 
     return out
 
 
 @router.put("/{cv_id}")
-async def update_cv_md(cv_id: str, md_content: str = Form(...), user: dict = Depends(get_current_user)):
+async def update_cv_md(cv_id: str, md_content: str = Form(...), user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     """Update the generated CV markdown (editor save)."""
-    sb = get_supabase()
     res = sb.table("generated_cvs").select("id,user_id").eq("id", cv_id).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
@@ -153,7 +157,7 @@ async def update_cv_md(cv_id: str, md_content: str = Form(...), user: dict = Dep
     try:
         embedding_service.update_embedding("generated_cv", cv_id, md_content)
     except Exception:
-        pass  # non-critical
+        logger.exception("Failed to update embedding for generated_cv cv_id=%s", cv_id)
 
     return {"status": "ok"}
 
@@ -163,9 +167,9 @@ async def convert_generated_cv(
     cv_id: str,
     include_header: bool = Form(True),
     user: dict = Depends(get_current_user),
+    sb: Client = Depends(get_supabase),
 ):
     """Convert generated CV markdown to PDF using the existing pipeline."""
-    sb = get_supabase()
     res = sb.table("generated_cvs").select("*").eq("id", cv_id).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
@@ -174,7 +178,7 @@ async def convert_generated_cv(
     if not row.get("md_content"):
         raise HTTPException(status_code=400, detail="CV has no markdown content yet")
 
-    check_and_record_conversion(user["user_id"])
+    check_and_record_conversion(user["user_id"], sb)
 
     # Insert into conversions table so existing pipeline works
     conversion_id = str(uuid.uuid4())
@@ -198,8 +202,7 @@ async def convert_generated_cv(
 
 
 @router.delete("/{cv_id}")
-async def delete_generated_cv(cv_id: str, user: dict = Depends(get_current_user)):
-    sb = get_supabase()
+async def delete_generated_cv(cv_id: str, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     res = sb.table("generated_cvs").select("id,user_id,pdf_storage_path").eq("id", cv_id).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
@@ -210,7 +213,10 @@ async def delete_generated_cv(cv_id: str, user: dict = Depends(get_current_user)
             from services import storage_service
             storage_service.delete_object(row["pdf_storage_path"])
         except Exception:
-            pass
+            logger.exception(
+                "Failed to delete storage object for cv_id=%s path=%s",
+                cv_id, row["pdf_storage_path"],
+            )
 
     sb.table("document_embeddings").delete().eq("doc_type", "generated_cv").eq("doc_id", cv_id).execute()
     sb.table("generated_cvs").delete().eq("id", cv_id).execute()

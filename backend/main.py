@@ -1,4 +1,6 @@
+import asyncio
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,10 +8,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import get_settings
 from core.supabase import get_supabase
 from routers import admin, convert, generate, history, me, prompts
+from services.conversion_runner import recover_pending_conversions
+from services.generation_runner import recover_pending_generations
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="CV Converter API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await recover_pending_conversions()
+    await recover_pending_generations()
+    yield
+
+
+app = FastAPI(title="CV Converter API", lifespan=lifespan)
 
 _settings = get_settings()
 _origins = [o.strip() for o in _settings.allowed_origins.split(",") if o.strip()]
@@ -23,10 +35,10 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health():
+async def health():
     try:
         sb = get_supabase()
-        sb.table("profiles").select("id").limit(1).execute()
+        await asyncio.to_thread(lambda: sb.table("profiles").select("id").limit(1).execute())
         db_status = "ok"
     except Exception:
         db_status = "error"

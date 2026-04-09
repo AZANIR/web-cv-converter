@@ -75,11 +75,11 @@ async function savePrompt(content: string) {
 
 <template>
   <div v-if="!editingSlug" class="max-w-[960px] mx-auto px-4 md:px-8 py-6 md:py-10 flex flex-col gap-6">
-    <h1 class="text-xl font-bold text-[var(--cv-primary-dark)]">
+    <h1 class="text-xl font-bold text-cv-primary">
       Prompts
     </h1>
 
-    <div v-if="loading" class="text-sm text-[var(--cv-muted-text)]">
+    <div v-if="loading" class="text-sm text-cv-muted">
       Loading...
     </div>
 
@@ -87,32 +87,32 @@ async function savePrompt(content: string) {
       <div
         v-for="item in items"
         :key="item.slug"
-        class="rounded-xl border border-[var(--cv-divider-gray)] bg-[var(--cv-surface)] px-5 py-4 flex items-center justify-between gap-4 cursor-pointer hover:shadow-sm transition-shadow"
+        class="rounded-xl border border-cv-divider bg-cv-surface px-5 py-4 flex items-center justify-between gap-4 cursor-pointer hover:shadow-sm transition-shadow"
         @click="openEditor(item.slug)"
       >
         <div class="flex flex-col gap-1 min-w-0">
-          <span class="text-sm font-bold text-[var(--cv-body-text)]">{{ item.name }}</span>
-          <span class="text-xs text-[var(--cv-muted-text)]">{{ item.slug }} &middot; v{{ item.version }}</span>
-          <span v-if="item.description" class="text-xs text-[var(--cv-muted-text)]">{{ item.description }}</span>
+          <span class="text-sm font-bold text-cv-body">{{ item.name }}</span>
+          <span class="text-xs text-cv-muted">{{ item.slug }} &middot; v{{ item.version }}</span>
+          <span v-if="item.description" class="text-xs text-cv-muted">{{ item.description }}</span>
         </div>
-        <span class="text-sm font-bold text-[var(--cv-teal-accent)]">Edit</span>
+        <span class="text-sm font-bold text-cv-teal">Edit</span>
       </div>
     </div>
   </div>
 
   <!-- Full-screen editor -->
   <div v-else class="flex flex-col h-[calc(100vh-3.5rem)]">
-    <div class="flex items-center justify-between px-4 md:px-8 py-3 border-b border-[var(--cv-divider-gray)] bg-[var(--cv-surface)]">
+    <div class="flex items-center justify-between px-4 md:px-8 py-3 border-b border-cv-divider bg-cv-surface">
       <div class="flex items-center gap-4">
         <button
           type="button"
-          class="text-sm font-bold text-[var(--cv-primary-dark)] hover:underline underline-offset-2"
+          class="text-sm font-bold text-cv-primary hover:underline underline-offset-2"
           @click="closeEditor"
         >
           &larr; Back
         </button>
-        <span class="text-sm font-bold text-[var(--cv-body-text)]">{{ currentPrompt?.name || editingSlug }}</span>
-        <span v-if="currentPrompt" class="text-xs text-[var(--cv-muted-text)]">v{{ currentPrompt.version }}</span>
+        <span class="text-sm font-bold text-cv-body">{{ currentPrompt?.name || editingSlug }}</span>
+        <span v-if="currentPrompt" class="text-xs text-cv-muted">v{{ currentPrompt.version }}</span>
       </div>
     </div>
     <div class="flex-1 min-h-0">

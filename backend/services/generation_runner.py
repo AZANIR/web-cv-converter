@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import datetime
 
-from core.config import get_settings
+from core.ai_client import get_ai_client
 from core.supabase import get_supabase
 from services import embedding_service, prompt_service, vacancy_parser
 
@@ -14,39 +14,8 @@ logger = logging.getLogger(__name__)
 
 def _generate_md_with_ai(full_prompt: str) -> str:
     """Call AI to generate CV markdown from the assembled prompt."""
-    s = get_settings()
-    provider = (s.ai_provider or "gemini").strip().lower()
-
-    if provider == "gemini":
-        from google.genai import Client, types
-
-        client = Client(api_key=s.gemini_api_key)
-        response = client.models.generate_content(
-            model=s.gemini_model,
-            contents=full_prompt,
-            config=types.GenerateContentConfig(
-                max_output_tokens=s.gemini_max_output_tokens,
-                temperature=0.7,
-            ),
-        )
-        return (response.text or "").strip()
-
-    if provider == "anthropic":
-        import anthropic
-
-        client = anthropic.Anthropic(api_key=s.anthropic_api_key)
-        message = client.messages.create(
-            model=s.anthropic_model,
-            max_tokens=s.anthropic_max_tokens,
-            messages=[{"role": "user", "content": full_prompt}],
-        )
-        parts = []
-        for block in message.content or []:
-            if getattr(block, "type", None) == "text":
-                parts.append(getattr(block, "text", "") or "")
-        return "\n".join(parts).strip()
-
-    raise RuntimeError(f"Unknown AI_PROVIDER={provider!r}")
+    client = get_ai_client()
+    return client.generate(full_prompt, temperature=0.7)
 
 
 async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
@@ -135,5 +104,25 @@ async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
         }).eq("id", cv_id).execute()
 
 
+_running_tasks: set[asyncio.Task] = set()
+
+
 def schedule_generation(vacancy_id: str, cv_id: str) -> None:
-    asyncio.create_task(run_generation_pipeline(vacancy_id, cv_id))
+    task = asyncio.create_task(run_generation_pipeline(vacancy_id, cv_id))
+    _running_tasks.add(task)
+    task.add_done_callback(_running_tasks.discard)
+
+
+async def recover_pending_generations() -> None:
+    """On startup, reschedule generations stuck in pending/generating state."""
+    sb = get_supabase()
+    res = (
+        sb.table("generated_cvs")
+        .select("id, vacancy_id")
+        .in_("status", ["pending", "generating"])
+        .execute()
+    )
+    if res.data:
+        logger.info("Recovering %d stuck generation(s)", len(res.data))
+        for row in res.data:
+            schedule_generation(row["vacancy_id"], row["id"])

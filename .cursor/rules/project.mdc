@@ -1,0 +1,84 @@
+---
+description: Global project conventions for web-cv-converter
+alwaysApply: true
+---
+
+# web-cv-converter Project Conventions
+
+## Stack
+
+| Layer | Technology | Version |
+|---|---|---|
+| Backend framework | FastAPI + Python | 3.11+ |
+| Schema validation | Pydantic | v2 |
+| Database | Supabase (PostgreSQL) | — |
+| Auth | Auth0 (JWT RS256) | — |
+| Frontend | Nuxt 3 + Vue 3 + TypeScript | — |
+| UI library | @nuxt/ui | — |
+| Auth (frontend) | nuxt-auth-utils (session) | — |
+| Deployment | Docker + Hetzner + Caddy | — |
+| Backend tests | pytest | — |
+| Frontend tests | vitest | — |
+| E2E tests | Playwright (TypeScript) | — |
+
+## Backend Conventions
+
+- Python 3.11+ type hints on all function signatures
+- Pydantic v2 for all request/response schemas
+- All FastAPI route handlers are `async def`
+- Auth guard: `user: dict = Depends(get_current_user)` from `core/auth.py`
+- Admin guard: `user: dict = Depends(require_admin)` from `core/auth.py`
+- Settings: `get_settings()` from `core/config.py` (pydantic-settings, reads `.env`)
+- Supabase client: `get_supabase()` from `core/supabase.py`
+- Routers registered in `backend/main.py` under `/api` prefix
+- Secrets never in code — always via `get_settings()` attributes
+- Migrations: append-only SQL in `backend/supabase/schema.sql`
+
+## API Response Shape
+
+All endpoints return consistent JSON:
+```json
+{ "data": <payload>, "error": null, "meta": {} }
+```
+Errors return HTTP 4xx/5xx with `{ "detail": "<message>" }` (FastAPI default).
+
+## HTTP Status Codes
+
+| Code | Meaning |
+|---|---|
+| 200 | Success (GET, PUT, PATCH) |
+| 201 | Created (POST) |
+| 400 | Validation error |
+| 401 | Unauthenticated |
+| 403 | Forbidden (wrong role or not in allowed_emails) |
+| 404 | Not found |
+| 500 | Server error |
+
+## Frontend Conventions
+
+- All components use `<script setup lang="ts">` — no Options API
+- Composables in `frontend/composables/` — prefix all with `use` (e.g., `useApi.ts`)
+- Nuxt 3 auto-imports: do NOT manually import `ref`, `computed`, `useRoute`, etc.
+- Layouts in `frontend/layouts/` — default layout wraps all pages
+- Middleware in `frontend/middleware/` — `auth.ts` protects authenticated routes
+- CSS: global styles only in `frontend/assets/css/main.css`; component styles scoped
+
+## File Organization
+
+| Domain | Write to |
+|---|---|
+| API routes | `backend/routers/` |
+| Business logic | `backend/services/` |
+| Auth / config / deps | `backend/core/` |
+| DB migrations | `backend/supabase/schema.sql` |
+| Pages | `frontend/pages/` |
+| Components | `frontend/components/` |
+| Composables | `frontend/composables/` |
+| Layouts | `frontend/layouts/` |
+| Middleware | `frontend/middleware/` |
+| Backend tests | `backend/tests/` |
+| Frontend unit tests | `frontend/tests/` |
+| E2E tests | `tests/e2e/` |
+| Documentation | `docs/` |
+| QA memory | `docs/qa-memory/` |
+| Project context | `memory-bank/` |

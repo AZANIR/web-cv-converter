@@ -48,7 +48,7 @@ describe('ConversionCard', () => {
   it('uses teal border for non-failed status', async () => {
     const wrapper = await mountSuspended(ConversionCard, { props: baseProps })
     const card = wrapper.find('div')
-    expect(card.classes().join(' ')).toContain('cv-teal-accent')
+    expect(card.classes().join(' ')).toContain('border-l-cv-teal')
   })
 
   it('uses red border for failed status', async () => {
@@ -56,6 +56,6 @@ describe('ConversionCard', () => {
       props: { ...baseProps, status: 'failed' },
     })
     const card = wrapper.find('div')
-    expect(card.classes().join(' ')).toContain('cv-error-red')
+    expect(card.classes().join(' ')).toContain('border-l-cv-error')
   })
 })

@@ -56,15 +56,15 @@ function submit() {
 <template>
   <div class="flex flex-col gap-5">
     <!-- Tabs -->
-    <div class="flex gap-1 rounded-lg bg-[var(--cv-teal-subtle-bg)] p-1">
+    <div class="flex gap-1 rounded-lg bg-cv-teal-subtle p-1">
       <button
         v-for="tab in (['text', 'url', 'file'] as const)"
         :key="tab"
         type="button"
         class="flex-1 py-2 text-sm font-bold rounded-md transition-colors"
         :class="activeTab === tab
-          ? 'bg-white text-[var(--cv-primary-dark)] shadow-sm'
-          : 'text-[var(--cv-muted-text)] hover:text-[var(--cv-body-text)]'"
+          ? 'bg-white text-cv-primary shadow-sm'
+          : 'text-cv-muted hover:text-cv-body'"
         @click="activeTab = tab"
       >
         {{ tab === 'text' ? 'Text' : tab === 'url' ? 'URL' : 'File' }}
@@ -76,7 +76,7 @@ function submit() {
       <textarea
         v-model="vacancyText"
         rows="10"
-        class="w-full rounded-lg border border-[var(--cv-divider-gray)] bg-[var(--cv-surface)] p-4 text-sm text-[var(--cv-body-text)] resize-none outline-none focus:border-[var(--cv-teal-accent)] transition-colors"
+        class="w-full rounded-lg border border-cv-divider bg-cv-surface p-4 text-sm text-cv-body resize-none outline-none focus:border-cv-teal transition-colors"
         placeholder="Paste the vacancy text here..."
       />
     </div>
@@ -86,7 +86,7 @@ function submit() {
       <input
         v-model="vacancyUrl"
         type="url"
-        class="w-full rounded-lg border border-[var(--cv-divider-gray)] bg-[var(--cv-surface)] px-4 py-3 text-sm text-[var(--cv-body-text)] outline-none focus:border-[var(--cv-teal-accent)] transition-colors"
+        class="w-full rounded-lg border border-cv-divider bg-cv-surface px-4 py-3 text-sm text-cv-body outline-none focus:border-cv-teal transition-colors"
         placeholder="https://example.com/job/..."
       >
     </div>
@@ -103,8 +103,8 @@ function submit() {
 
       <div
         v-if="!vacancyFile"
-        class="rounded-xl border-2 border-dashed border-[var(--cv-teal-accent)] bg-[var(--cv-teal-subtle-bg)] p-10 flex flex-col items-center gap-3 text-center cursor-pointer transition-shadow"
-        :class="dragOver ? 'ring-2 ring-[var(--cv-teal-accent)] ring-offset-2' : ''"
+        class="rounded-xl border-2 border-dashed border-cv-teal bg-cv-teal-subtle p-10 flex flex-col items-center gap-3 text-center cursor-pointer transition-shadow"
+        :class="dragOver ? 'ring-2 ring-cv-teal ring-offset-2' : ''"
         role="button"
         tabindex="0"
         @click="fileInput?.click()"
@@ -113,25 +113,25 @@ function submit() {
         @dragleave.prevent="dragOver = false"
         @drop.prevent="onDrop"
       >
-        <p class="text-base text-[var(--cv-body-text)]">
+        <p class="text-base text-cv-body">
           Drop your file here
         </p>
-        <p class="text-sm text-[var(--cv-teal-accent)]">
+        <p class="text-sm text-cv-teal">
           or click to browse
         </p>
-        <p class="text-xs text-[var(--cv-muted-text)]">
+        <p class="text-xs text-cv-muted">
           .md, .txt, .pdf
         </p>
       </div>
 
       <div
         v-else
-        class="rounded-xl border border-[var(--cv-teal-accent)] bg-[var(--cv-surface)] py-3 px-5 flex items-center justify-between gap-3"
+        class="rounded-xl border border-cv-teal bg-cv-surface py-3 px-5 flex items-center justify-between gap-3"
       >
-        <span class="text-sm font-bold text-[var(--cv-body-text)] truncate">{{ vacancyFile.name }}</span>
+        <span class="text-sm font-bold text-cv-body truncate">{{ vacancyFile.name }}</span>
         <button
           type="button"
-          class="text-sm font-bold text-[var(--cv-error-red)] hover:underline"
+          class="text-sm font-bold text-cv-error hover:underline"
           @click="vacancyFile = null"
         >
           Remove
@@ -143,7 +143,7 @@ function submit() {
     <UButton
       block
       size="lg"
-      class="h-12 justify-center !rounded-lg !bg-[var(--cv-teal-accent)] !text-white hover:!brightness-95"
+      class="h-12 justify-center !rounded-lg !bg-cv-teal !text-white hover:!brightness-95"
       :class="(!canSubmit || loading) ? 'opacity-40' : ''"
       :disabled="!canSubmit || loading"
       :loading="loading"

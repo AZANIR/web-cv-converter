@@ -10,9 +10,11 @@ async def test_list_history(client, mock_supabase):
     mock_supabase.select.return_value = mock_supabase
     mock_supabase.eq.return_value = mock_supabase
     mock_supabase.order.return_value = mock_supabase
-    mock_supabase.execute.return_value = MagicMock(data=[
-        {"id": "c1", "original_filename": "cv.md", "status": "completed"},
-    ])
+    mock_supabase.range.return_value = mock_supabase
+    
+    count_result = MagicMock(count=1)
+    data_result = MagicMock(data=[{"id": "c1", "original_filename": "cv.md", "status": "completed"}])
+    mock_supabase.execute.side_effect = [count_result, data_result]
 
     resp = await client.get("/api/history")
     assert resp.status_code == 200

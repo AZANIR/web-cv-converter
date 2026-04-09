@@ -127,7 +127,7 @@ function startConversionPoll() {
   <div class="flex flex-col h-[calc(100vh-3.5rem)]">
     <!-- Loading state -->
     <div v-if="loading" class="flex-1 flex items-center justify-center">
-      <span class="text-sm text-[var(--cv-muted-text)]">Loading...</span>
+      <span class="text-sm text-cv-muted">Loading...</span>
     </div>
 
     <!-- Generating state (waiting for AI) -->
@@ -135,18 +135,18 @@ function startConversionPoll() {
       v-else-if="cv && (cv.status === 'pending' || cv.status === 'generating')"
       class="flex-1 flex flex-col items-center justify-center gap-5 px-4"
     >
-      <span class="inline-block w-10 h-10 border-3 border-[var(--cv-teal-accent)] border-t-transparent rounded-full animate-spin" />
+      <span class="inline-block w-10 h-10 border-3 border-cv-teal border-t-transparent rounded-full animate-spin" />
       <div class="text-center flex flex-col gap-2">
-        <p class="text-lg font-bold text-[var(--cv-primary-dark)]">
+        <p class="text-lg font-bold text-cv-primary">
           Generating your CV...
         </p>
-        <p class="text-sm text-[var(--cv-muted-text)]">
+        <p class="text-sm text-cv-muted">
           AI is analyzing the vacancy and building a tailored CV. This usually takes 15–30 seconds.
         </p>
       </div>
       <button
         type="button"
-        class="text-sm text-[var(--cv-muted-text)] hover:text-[var(--cv-body-text)] underline underline-offset-2 mt-4"
+        class="text-sm text-cv-muted hover:text-cv-body underline underline-offset-2 mt-4"
         @click="router.push('/generate-history')"
       >
         &larr; Back to Generated CVs
@@ -158,26 +158,26 @@ function startConversionPoll() {
       v-else-if="cv && cv.status === 'failed'"
       class="flex-1 flex flex-col items-center justify-center gap-5 px-4"
     >
-      <div class="max-w-md w-full rounded-xl border border-[var(--cv-error-red)] bg-[var(--cv-error-bg)] p-6 flex flex-col gap-4">
+      <div class="max-w-md w-full rounded-xl border border-cv-error bg-cv-error-bg p-6 flex flex-col gap-4">
         <div class="flex items-center gap-3">
-          <span class="text-2xl font-bold text-[var(--cv-error-red)]">&#10007;</span>
-          <p class="text-base font-bold text-[var(--cv-body-text)]">
+          <span class="text-2xl font-bold text-cv-error">&#10007;</span>
+          <p class="text-base font-bold text-cv-body">
             Generation failed
           </p>
         </div>
-        <p v-if="cv.error_message" class="text-sm text-[var(--cv-error-red)]">
+        <p v-if="cv.error_message" class="text-sm text-cv-error">
           {{ cv.error_message }}
         </p>
         <div class="flex gap-3 mt-2">
           <NuxtLink
             to="/generate"
-            class="h-10 px-5 inline-flex items-center justify-center rounded-lg bg-[var(--cv-teal-accent)] text-white text-sm font-bold hover:brightness-95 transition-all"
+            class="h-10 px-5 inline-flex items-center justify-center rounded-lg bg-cv-teal text-white text-sm font-bold hover:brightness-95 transition-all"
           >
             Try Again
           </NuxtLink>
           <NuxtLink
             to="/generate-history"
-            class="h-10 px-5 inline-flex items-center justify-center rounded-lg border border-[var(--cv-primary-dark)] text-sm font-bold text-[var(--cv-primary-dark)] hover:bg-[var(--cv-teal-subtle-bg)] transition-colors"
+            class="h-10 px-5 inline-flex items-center justify-center rounded-lg border border-cv-primary text-sm font-bold text-cv-primary hover:bg-cv-teal-subtle transition-colors"
           >
             Back to History
           </NuxtLink>
@@ -191,12 +191,12 @@ function startConversionPoll() {
       class="flex-1 flex items-center justify-center px-4"
     >
       <div class="max-w-md w-full text-center flex flex-col gap-4 items-center">
-        <p class="text-base text-[var(--cv-error-red)]">
+        <p class="text-base text-cv-error">
           {{ errorMessage }}
         </p>
         <NuxtLink
           to="/generate-history"
-          class="text-sm font-bold text-[var(--cv-teal-accent)] hover:underline underline-offset-2"
+          class="text-sm font-bold text-cv-teal hover:underline underline-offset-2"
         >
           &larr; Back to Generated CVs
         </NuxtLink>
@@ -206,10 +206,10 @@ function startConversionPoll() {
     <!-- Editor + Actions -->
     <template v-else-if="cv">
       <!-- Top bar -->
-      <div class="flex items-center justify-between px-4 md:px-8 py-2 border-b border-[var(--cv-divider-gray)] bg-[var(--cv-surface)]">
+      <div class="flex items-center justify-between px-4 md:px-8 py-2 border-b border-cv-divider bg-cv-surface">
         <NuxtLink
           to="/generate-history"
-          class="text-sm text-[var(--cv-muted-text)] hover:text-[var(--cv-body-text)] underline-offset-2 hover:underline"
+          class="text-sm text-cv-muted hover:text-cv-body underline-offset-2 hover:underline"
         >
           &larr; Back
         </NuxtLink>
@@ -246,7 +246,7 @@ function startConversionPoll() {
       </div>
 
       <!-- Bottom actions -->
-      <div class="px-4 md:px-8 py-3 border-t border-[var(--cv-divider-gray)] bg-[var(--cv-surface)]">
+      <div class="px-4 md:px-8 py-3 border-t border-cv-divider bg-cv-surface">
         <GeneratedCvResult
           :cv-id="cv.id"
           :status="cv.status"

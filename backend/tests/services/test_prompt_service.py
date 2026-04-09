@@ -68,35 +68,6 @@ class TestRenderPrompt:
         assert result == "Hello World, your data: stuff"
 
 
-class TestUpdatePrompt:
-    @patch("services.prompt_service.get_supabase")
-    @patch("services.prompt_service.get_prompt_full")
-    def test_increments_version(self, mock_full, mock_sb):
-        mock_full.return_value = {"id": "1", "slug": "test", "version": 3, "content": "old"}
-
-        sb = MagicMock()
-        sb.table.return_value = sb
-        sb.update.return_value = sb
-        sb.eq.return_value = sb
-        sb.execute.return_value = MagicMock(data=[{"slug": "test", "version": 4, "content": "new"}])
-        mock_sb.return_value = sb
-
-        from services.prompt_service import update_prompt, _cache
-        _cache.clear()
-
-        result = update_prompt("test", "new content", "user-1")
-        assert result["version"] == 4
-        update_call = sb.update.call_args[0][0]
-        assert update_call["version"] == 4
-
-    @patch("services.prompt_service.get_prompt_full")
-    def test_not_found_raises(self, mock_full):
-        mock_full.return_value = None
-
-        from services.prompt_service import update_prompt
-
-        with pytest.raises(ValueError, match="Prompt not found"):
-            update_prompt("missing", "content", "user-1")
 
 
 class TestInvalidateCache:

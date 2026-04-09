@@ -48,5 +48,20 @@ async def run_conversion_pipeline(conversion_id: str) -> None:
         ).eq("id", conversion_id).execute()
 
 
+_running_tasks: set[asyncio.Task] = set()
+
+
 def schedule_conversion(conversion_id: str) -> None:
-    asyncio.create_task(run_conversion_pipeline(conversion_id))
+    task = asyncio.create_task(run_conversion_pipeline(conversion_id))
+    _running_tasks.add(task)
+    task.add_done_callback(_running_tasks.discard)
+
+
+async def recover_pending_conversions() -> None:
+    """On startup, reschedule conversions stuck in pending/processing state."""
+    sb = get_supabase()
+    res = sb.table("conversions").select("id").in_("status", ["pending", "processing"]).execute()
+    if res.data:
+        logger.info("Recovering %d stuck conversion(s)", len(res.data))
+        for row in res.data:
+            schedule_conversion(row["id"])
