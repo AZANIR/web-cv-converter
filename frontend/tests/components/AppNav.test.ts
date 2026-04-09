@@ -1,6 +1,16 @@
-import { describe, it, expect } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { describe, it, expect, vi } from 'vitest'
+import { mountSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime'
 import AppNav from '~/components/AppNav.vue'
+
+mockNuxtImport('useUserSession', () => () => ({
+  session: { value: {} },
+  loggedIn: { value: true },
+  user: { value: null },
+  fetch: vi.fn().mockResolvedValue(undefined),
+  clear: vi.fn().mockResolvedValue(undefined),
+}))
+
+mockNuxtImport('useApiRequest', () => () => vi.fn().mockResolvedValue({ role: null }))
 
 describe('AppNav', () => {
   it('renders the brand name', async () => {

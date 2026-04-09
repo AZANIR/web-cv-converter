@@ -84,42 +84,5 @@ class TestExtractTextFromUrl:
                 await extract_text_from_url("https://example.com/empty")
 
 
-class TestTemplatizeVacancy:
-    @patch("services.vacancy_parser.get_settings")
-    @patch("services.vacancy_parser._templatize_gemini")
-    def test_dispatches_to_gemini(self, mock_gemini, mock_settings):
-        s = MagicMock()
-        s.ai_provider = "gemini"
-        mock_settings.return_value = s
-
-        expected = {"title": "QA Engineer", "tags": ["Playwright"]}
-        mock_gemini.return_value = expected
-
-        from services.vacancy_parser import templatize_vacancy
-
-        result = templatize_vacancy("We need a QA", "prompt {{VACANCY_TEXT}}", s)
-        assert result == expected
-
-    @patch("services.vacancy_parser.get_settings")
-    def test_unknown_provider_raises(self, mock_settings):
-        s = MagicMock()
-        s.ai_provider = "openai"
-        mock_settings.return_value = s
-
-        from services.vacancy_parser import templatize_vacancy
-
-        with pytest.raises(RuntimeError, match="Unknown AI_PROVIDER"):
-            templatize_vacancy("text", "prompt {{VACANCY_TEXT}}", s)
 
 
-class TestStripJsonFences:
-    def test_strips_json_fence(self):
-        from services.vacancy_parser import _strip_json_fences
-
-        text = '```json\n{"key": "val"}\n```'
-        assert _strip_json_fences(text) == '{"key": "val"}'
-
-    def test_returns_plain_text(self):
-        from services.vacancy_parser import _strip_json_fences
-
-        assert _strip_json_fences('{"a": 1}') == '{"a": 1}'

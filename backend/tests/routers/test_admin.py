@@ -13,9 +13,11 @@ async def test_list_users(client, mock_supabase):
     mock_supabase.table.return_value = mock_supabase
     mock_supabase.select.return_value = mock_supabase
     mock_supabase.order.return_value = mock_supabase
-    mock_supabase.execute.return_value = MagicMock(data=[
-        {"email": "user@test.com", "created_at": "2025-01-01"},
-    ])
+    mock_supabase.range.return_value = mock_supabase
+    
+    count_result = MagicMock(count=1)
+    data_result = MagicMock(data=[{"email": "user@test.com", "created_at": "2025-01-01"}])
+    mock_supabase.execute.side_effect = [count_result, data_result]
 
     resp = await client.get("/api/admin/users")
     assert resp.status_code == 200
@@ -48,7 +50,11 @@ async def test_all_conversions(client, mock_supabase):
     mock_supabase.select.return_value = mock_supabase
     mock_supabase.order.return_value = mock_supabase
     mock_supabase.in_.return_value = mock_supabase
-    mock_supabase.execute.return_value = MagicMock(data=[])
+    mock_supabase.range.return_value = mock_supabase
+    
+    count_result = MagicMock(count=0)
+    data_result = MagicMock(data=[])
+    mock_supabase.execute.side_effect = [count_result, data_result]
 
     resp = await client.get("/api/admin/conversions")
     assert resp.status_code == 200
@@ -118,9 +124,15 @@ async def test_list_conversions_filter_by_status(client, mock_supabase):
             "error_message": None,
         }
     ]
-    count_result = MagicMock(data=[], count=1)
-    data_result = MagicMock(data=completed_items, count=1)
+    count_result = MagicMock(count=1)
+    data_result = MagicMock(data=completed_items)
     profiles_result = MagicMock(data=[])
+    mock_supabase.table.return_value = mock_supabase
+    mock_supabase.select.return_value = mock_supabase
+    mock_supabase.eq.return_value = mock_supabase
+    mock_supabase.order.return_value = mock_supabase
+    mock_supabase.range.return_value = mock_supabase
+    mock_supabase.in_.return_value = mock_supabase
     mock_supabase.execute.side_effect = [count_result, data_result, profiles_result]
 
     resp = await client.get("/api/admin/conversions", params={"status": "completed"})

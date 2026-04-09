@@ -104,5 +104,25 @@ async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
         }).eq("id", cv_id).execute()
 
 
+_running_tasks: set[asyncio.Task] = set()
+
+
 def schedule_generation(vacancy_id: str, cv_id: str) -> None:
-    asyncio.create_task(run_generation_pipeline(vacancy_id, cv_id))
+    task = asyncio.create_task(run_generation_pipeline(vacancy_id, cv_id))
+    _running_tasks.add(task)
+    task.add_done_callback(_running_tasks.discard)
+
+
+async def recover_pending_generations() -> None:
+    """On startup, reschedule generations stuck in pending/generating state."""
+    sb = get_supabase()
+    res = (
+        sb.table("generated_cvs")
+        .select("id, vacancy_id")
+        .in_("status", ["pending", "generating"])
+        .execute()
+    )
+    if res.data:
+        logger.info("Recovering %d stuck generation(s)", len(res.data))
+        for row in res.data:
+            schedule_generation(row["vacancy_id"], row["id"])

@@ -27,10 +27,13 @@ async def test_convert_rejects_large_file(client, settings):
 
 
 @patch("routers.convert.schedule_conversion")
-async def test_convert_success(mock_schedule, client, mock_supabase):
+@patch("routers.convert.check_and_record_conversion")
+async def test_convert_success(mock_check_rate, mock_schedule, client, mock_supabase):
     mock_supabase.table.return_value = mock_supabase
     mock_supabase.insert.return_value = mock_supabase
-    mock_supabase.execute.return_value = MagicMock(data=[])
+    mock_supabase.execute.return_value = MagicMock(
+        data=[{"id": "conv-123"}]
+    )
 
     resp = await client.post(
         "/api/convert",
@@ -41,6 +44,7 @@ async def test_convert_success(mock_schedule, client, mock_supabase):
     data = resp.json()
     assert "conversion_id" in data
     mock_schedule.assert_called_once()
+    mock_check_rate.assert_called_once()
 
 
 async def test_get_conversion_status_404_when_not_found(client, mock_supabase):

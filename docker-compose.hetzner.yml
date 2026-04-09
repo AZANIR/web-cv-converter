@@ -18,6 +18,12 @@ services:
       - ./cvc/repo/backend/assets:/app/assets:ro
       - ./cvc/repo/backend/styles.json:/app/styles.json:ro
       - ./cvc/repo/backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - web
 
@@ -35,6 +41,7 @@ services:
       NUXT_API_BASE_SERVER: http://cvc-backend:8000
       NUXT_PUBLIC_API_URL: https://cvc.valtive.io
     depends_on:
-      - cvc-backend
+      cvc-backend:
+        condition: service_healthy
     networks:
       - web

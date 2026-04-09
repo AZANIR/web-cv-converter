@@ -4,10 +4,17 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 // ---------------------------------------------------------------------------
 // Hoisted mocks — must be defined before any imports that consume them
 // ---------------------------------------------------------------------------
-const { mockSession, mockFetch } = vi.hoisted(() => ({
-  mockSession: { value: {} as Record<string, unknown> },
-  mockFetch: vi.fn(),
-}))
+const { mockSession, mockFetch } = vi.hoisted(() => {
+  // $fetch.create() is called by auth-interceptor.client plugin at startup;
+  // it must exist or the plugin throws and all tests in this file get skipped.
+  const create = vi.fn()
+  const fn = Object.assign(vi.fn(), { create })
+  create.mockReturnValue(fn)
+  return {
+    mockSession: { value: {} as Record<string, unknown> },
+    mockFetch: fn,
+  }
+})
 
 mockNuxtImport('useUserSession', () => () => ({
   session: mockSession,
@@ -15,11 +22,6 @@ mockNuxtImport('useUserSession', () => () => ({
   user: { value: null },
   fetch: vi.fn(),
   clear: vi.fn(),
-}))
-
-// Mock useNuxtApp so $apiFetch is not available (forces $fetch path)
-mockNuxtImport('useNuxtApp', () => () => ({
-  $apiFetch: undefined,
 }))
 
 // Replace $fetch globally so we can capture calls
