@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
+import { useApiRequest } from '~/composables/useApi'
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks — must be defined before any imports that consume them
@@ -22,6 +23,12 @@ mockNuxtImport('useUserSession', () => () => ({
   user: { value: null },
   fetch: vi.fn(),
   clear: vi.fn(),
+}))
+
+mockNuxtImport('useRuntimeConfig', () => () => ({
+  public: {
+    apiBase: 'http://localhost:3000',
+  },
 }))
 
 // Replace $fetch globally so we can capture calls
