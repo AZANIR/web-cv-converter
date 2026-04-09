@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { useApiRequest } from '../composables/useApi'
+import { useApiRequest } from '../../composables/useApi'
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks — must be defined before any imports that consume them
