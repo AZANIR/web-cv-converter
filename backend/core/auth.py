@@ -95,15 +95,24 @@ async def upsert_profile(user_id: str, email: str | None, name: str | None, avat
     if not email:
         return
     sb = get_supabase()
-    sb.table("profiles").upsert(
-        {
-            "id": user_id,
-            "email": email,
-            "full_name": name,
-            "avatar_url": avatar_url,
-        },
-        on_conflict="id",
-    ).execute()
+    existing = sb.table("profiles").select("id").eq("id", user_id).limit(1).execute()
+    if existing.data:
+        sb.table("profiles").update(
+            {
+                "email": email,
+                "full_name": name,
+                "avatar_url": avatar_url,
+            }
+        ).eq("id", user_id).execute()
+    else:
+        sb.table("profiles").insert(
+            {
+                "id": user_id,
+                "email": email,
+                "full_name": name,
+                "avatar_url": avatar_url,
+            }
+        ).execute()
 
 
 async def get_current_user(
