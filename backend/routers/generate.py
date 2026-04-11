@@ -79,38 +79,6 @@ async def generate_cv(
     return {"vacancy_id": vacancy_id, "cv_id": cv_id}
 
 
-@router.get("/history")
-async def generation_history(user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
-    res = (
-        sb.table("generated_cvs")
-        .select("id,vacancy_id,status,pdf_filename,created_at,error_message")
-        .eq("user_id", user["user_id"])
-        .order("created_at", desc=True)
-        .execute()
-    )
-    items = res.data or []
-
-    vacancy_ids = list({r["vacancy_id"] for r in items if r.get("vacancy_id")})
-    vacancy_map: dict[str, dict] = {}
-    if vacancy_ids:
-        vres = (
-            sb.table("vacancies")
-            .select("id,case_study_json,input_type,original_filename")
-            .in_("id", vacancy_ids)
-            .execute()
-        )
-        for v in vres.data or []:
-            vacancy_map[v["id"]] = v
-
-    for row in items:
-        v = vacancy_map.get(row.get("vacancy_id"), {})
-        cs = v.get("case_study_json") or {}
-        row["vacancy_title"] = cs.get("title", v.get("original_filename", "Untitled"))
-        row["input_type"] = v.get("input_type")
-
-    return {"items": items}
-
-
 @router.get("/{cv_id}")
 async def get_generated_cv(cv_id: uuid.UUID, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     res = sb.table("generated_cvs").select("*").eq("id", str(cv_id)).limit(1).execute()
