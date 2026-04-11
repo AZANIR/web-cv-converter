@@ -49,3 +49,9 @@ def get_signed_url(storage_path: str) -> str:
     if isinstance(result, dict) and "signedUrl" in result:
         return result["signedUrl"]
     raise RuntimeError("Unexpected signed URL response")
+
+
+def delete_object(storage_path: str) -> None:
+    """Delete an object from Supabase storage."""
+    sb = get_supabase()
+    sb.storage.from_(BUCKET).remove([storage_path])
