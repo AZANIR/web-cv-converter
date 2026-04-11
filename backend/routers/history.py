@@ -1,4 +1,5 @@
 import logging
+import uuid
 from math import ceil
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -71,11 +72,11 @@ async def list_history(
 
 @router.get("/history/{conversion_id}/download")
 async def history_download(
-    conversion_id: str,
+    conversion_id: uuid.UUID,
     user: dict = Depends(get_current_user),
     sb: Client = Depends(get_supabase),
 ):
-    res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
+    res = sb.table("conversions").select("*").eq("id", str(conversion_id)).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
     row = res.data[0]
@@ -90,11 +91,11 @@ async def history_download(
 
 @router.delete("/history/{conversion_id}")
 async def delete_history_item(
-    conversion_id: str,
+    conversion_id: uuid.UUID,
     user: dict = Depends(get_current_user),
     sb: Client = Depends(get_supabase),
 ):
-    res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
+    res = sb.table("conversions").select("*").eq("id", str(conversion_id)).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
     row = res.data[0]
@@ -103,7 +104,7 @@ async def delete_history_item(
     path = row.get("pdf_storage_path")
     if path:
         _remove_storage_paths(sb, [path])
-    sb.table("conversions").delete().eq("id", conversion_id).execute()
+    sb.table("conversions").delete().eq("id", str(conversion_id)).execute()
     return {"ok": True}
 
 

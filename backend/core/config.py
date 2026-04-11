@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,6 +43,24 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 5 * 1024 * 1024
     conversions_per_hour: int = 10
     signed_url_expires_seconds: int = 3600
+
+    @model_validator(mode="after")
+    def check_required_in_production(self) -> "Settings":
+        import os
+
+        if os.getenv("ENVIRONMENT", "").lower() == "production":
+            required = {
+                "auth0_domain": self.auth0_domain,
+                "auth0_api_audience": self.auth0_api_audience,
+                "supabase_url": self.supabase_url,
+                "supabase_service_role_key": self.supabase_service_role_key,
+            }
+            missing = [k for k, v in required.items() if not v]
+            if missing:
+                raise ValueError(
+                    f"Missing required config in production: {', '.join(missing)}"
+                )
+        return self
 
 
 @lru_cache

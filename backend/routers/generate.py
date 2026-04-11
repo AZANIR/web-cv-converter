@@ -79,41 +79,9 @@ async def generate_cv(
     return {"vacancy_id": vacancy_id, "cv_id": cv_id}
 
 
-@router.get("/history")
-async def generation_history(user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
-    res = (
-        sb.table("generated_cvs")
-        .select("id,vacancy_id,status,pdf_filename,created_at,error_message")
-        .eq("user_id", user["user_id"])
-        .order("created_at", desc=True)
-        .execute()
-    )
-    items = res.data or []
-
-    vacancy_ids = list({r["vacancy_id"] for r in items if r.get("vacancy_id")})
-    vacancy_map: dict[str, dict] = {}
-    if vacancy_ids:
-        vres = (
-            sb.table("vacancies")
-            .select("id,case_study_json,input_type,original_filename")
-            .in_("id", vacancy_ids)
-            .execute()
-        )
-        for v in vres.data or []:
-            vacancy_map[v["id"]] = v
-
-    for row in items:
-        v = vacancy_map.get(row.get("vacancy_id"), {})
-        cs = v.get("case_study_json") or {}
-        row["vacancy_title"] = cs.get("title", v.get("original_filename", "Untitled"))
-        row["input_type"] = v.get("input_type")
-
-    return {"items": items}
-
-
 @router.get("/{cv_id}")
-async def get_generated_cv(cv_id: str, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
-    res = sb.table("generated_cvs").select("*").eq("id", cv_id).limit(1).execute()
+async def get_generated_cv(cv_id: uuid.UUID, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
+    res = sb.table("generated_cvs").select("*").eq("id", str(cv_id)).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
     row = res.data[0]
@@ -146,16 +114,16 @@ async def get_generated_cv(cv_id: str, user: dict = Depends(get_current_user), s
 
 
 @router.put("/{cv_id}")
-async def update_cv_md(cv_id: str, md_content: str = Form(...), user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
+async def update_cv_md(cv_id: uuid.UUID, md_content: str = Form(...), user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
     """Update the generated CV markdown (editor save)."""
-    res = sb.table("generated_cvs").select("id,user_id").eq("id", cv_id).limit(1).execute()
+    res = sb.table("generated_cvs").select("id,user_id").eq("id", str(cv_id)).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
 
-    sb.table("generated_cvs").update({"md_content": md_content}).eq("id", cv_id).execute()
+    sb.table("generated_cvs").update({"md_content": md_content}).eq("id", str(cv_id)).execute()
 
     try:
-        embedding_service.update_embedding("generated_cv", cv_id, md_content)
+        embedding_service.update_embedding("generated_cv", str(cv_id), md_content)
     except Exception:
         logger.exception("Failed to update embedding for generated_cv cv_id=%s", cv_id)
 
@@ -164,13 +132,13 @@ async def update_cv_md(cv_id: str, md_content: str = Form(...), user: dict = Dep
 
 @router.post("/{cv_id}/convert")
 async def convert_generated_cv(
-    cv_id: str,
+    cv_id: uuid.UUID,
     include_header: bool = Form(True),
     user: dict = Depends(get_current_user),
     sb: Client = Depends(get_supabase),
 ):
     """Convert generated CV markdown to PDF using the existing pipeline."""
-    res = sb.table("generated_cvs").select("*").eq("id", cv_id).limit(1).execute()
+    res = sb.table("generated_cvs").select("*").eq("id", str(cv_id)).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -185,7 +153,7 @@ async def convert_generated_cv(
     sb.table("conversions").insert({
         "id": conversion_id,
         "user_id": user["user_id"],
-        "original_filename": f"generated_cv_{cv_id[:8]}.md",
+        "original_filename": f"generated_cv_{str(cv_id)[:8]}.md",
         "md_content": row["md_content"],
         "status": "pending",
         "include_header": include_header,
@@ -194,16 +162,16 @@ async def convert_generated_cv(
     sb.table("generated_cvs").update({
         "status": "converting",
         "include_header": include_header,
-    }).eq("id", cv_id).execute()
+    }).eq("id", str(cv_id)).execute()
 
     schedule_conversion(conversion_id)
 
-    return {"conversion_id": conversion_id, "cv_id": cv_id}
+    return {"conversion_id": conversion_id, "cv_id": str(cv_id)}
 
 
 @router.delete("/{cv_id}")
-async def delete_generated_cv(cv_id: str, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
-    res = sb.table("generated_cvs").select("id,user_id,pdf_storage_path").eq("id", cv_id).limit(1).execute()
+async def delete_generated_cv(cv_id: uuid.UUID, user: dict = Depends(get_current_user), sb: Client = Depends(get_supabase)):
+    res = sb.table("generated_cvs").select("id,user_id,pdf_storage_path").eq("id", str(cv_id)).limit(1).execute()
     if not res.data or res.data[0]["user_id"] != user["user_id"]:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -218,7 +186,7 @@ async def delete_generated_cv(cv_id: str, user: dict = Depends(get_current_user)
                 cv_id, row["pdf_storage_path"],
             )
 
-    sb.table("document_embeddings").delete().eq("doc_type", "generated_cv").eq("doc_id", cv_id).execute()
-    sb.table("generated_cvs").delete().eq("id", cv_id).execute()
+    sb.table("document_embeddings").delete().eq("doc_type", "generated_cv").eq("doc_id", str(cv_id)).execute()
+    sb.table("generated_cvs").delete().eq("id", str(cv_id)).execute()
 
     return {"status": "ok"}

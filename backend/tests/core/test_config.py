@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
+import pytest
+
 from core.config import Settings
 
 
@@ -55,3 +59,25 @@ class TestSettings:
             admin_emails="a@test.com, b@test.com",
         )
         assert s.admin_emails == "a@test.com, b@test.com"
+
+
+class TestProductionValidation:
+    @patch.dict("os.environ", {"ENVIRONMENT": "production"})
+    def test_raises_on_missing_config_in_production(self):
+        with pytest.raises(ValueError, match="Missing required config"):
+            Settings(
+                auth0_domain="",
+                auth0_api_audience="",
+                supabase_url="",
+                supabase_service_role_key="",
+            )
+
+    @patch.dict("os.environ", {"ENVIRONMENT": "development"})
+    def test_allows_empty_config_in_development(self):
+        s = Settings(
+            auth0_domain="",
+            auth0_api_audience="",
+            supabase_url="",
+            supabase_service_role_key="",
+        )  # should not raise
+        assert s.auth0_domain == ""

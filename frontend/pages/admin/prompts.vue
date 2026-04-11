@@ -27,7 +27,9 @@ onMounted(async () => {
     const res = await api<{ items: PromptItem[] }>('/api/prompts')
     items.value = res.items
   }
-  catch { /* ignore */ }
+  catch {
+    useToast().add({ title: 'Failed to load prompts', color: 'red' })
+  }
   finally {
     loading.value = false
   }
@@ -41,7 +43,9 @@ async function openEditor(slug: string) {
     currentPrompt.value = data
     editContent.value = data.content
   }
-  catch { /* ignore */ }
+  catch {
+    useToast().add({ title: 'Failed to load prompt', color: 'red' })
+  }
 }
 
 function closeEditor() {
@@ -66,7 +70,9 @@ async function savePrompt(content: string) {
       items.value[idx] = { ...items.value[idx], version: updated.version, updated_at: updated.updated_at }
     }
   }
-  catch { /* ignore */ }
+  catch {
+    useToast().add({ title: 'Failed to save prompt', color: 'red' })
+  }
   finally {
     saving.value = false
   }

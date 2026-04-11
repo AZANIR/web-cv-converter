@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 
 const props = defineProps<{
   modelValue: string
@@ -32,7 +33,7 @@ watch(() => props.modelValue, (val) => {
 })
 
 watch(localContent, (val) => {
-  renderedHtml.value = md.render(val || '')
+  renderedHtml.value = DOMPurify.sanitize(md.render(val || ''))
   emit('update:modelValue', val)
 }, { immediate: true })
 
@@ -101,6 +102,7 @@ onUnmounted(() => {
         <textarea
           :value="localContent"
           :readonly="readonly"
+          aria-label="Markdown editor"
           class="flex-1 p-4 resize-none font-mono text-sm leading-relaxed text-cv-body bg-cv-surface outline-none"
           placeholder="Markdown content..."
           @input="onInput"

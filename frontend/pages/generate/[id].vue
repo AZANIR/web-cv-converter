@@ -71,7 +71,9 @@ async function saveMd(content: string) {
     form.append('md_content', content)
     await api(`/api/generate/${cvId.value}`, { method: 'PUT', body: form })
   }
-  catch { /* silent save failure */ }
+  catch {
+    useToast().add({ title: 'Failed to save', color: 'red' })
+  }
 }
 
 async function convertToPdf(includeHeader: boolean) {

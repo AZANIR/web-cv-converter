@@ -76,6 +76,7 @@ function submit() {
       <textarea
         v-model="vacancyText"
         rows="10"
+        aria-label="Vacancy text"
         class="w-full rounded-lg border border-cv-divider bg-cv-surface p-4 text-sm text-cv-body resize-none outline-none focus:border-cv-teal transition-colors"
         placeholder="Paste the vacancy text here..."
       />
@@ -86,6 +87,7 @@ function submit() {
       <input
         v-model="vacancyUrl"
         type="url"
+        aria-label="Vacancy URL"
         class="w-full rounded-lg border border-cv-divider bg-cv-surface px-4 py-3 text-sm text-cv-body outline-none focus:border-cv-teal transition-colors"
         placeholder="https://example.com/job/..."
       >
@@ -97,6 +99,7 @@ function submit() {
         ref="fileInput"
         type="file"
         accept=".md,.txt,.pdf"
+        aria-label="Upload vacancy file"
         class="hidden"
         @change="(e) => setFile((e.target as HTMLInputElement).files?.[0] || null)"
       >
@@ -107,6 +110,7 @@ function submit() {
         :class="dragOver ? 'ring-2 ring-cv-teal ring-offset-2' : ''"
         role="button"
         tabindex="0"
+        aria-label="File upload area"
         @click="fileInput?.click()"
         @keydown.enter="fileInput?.click()"
         @dragover.prevent="dragOver = true"

@@ -1,17 +1,26 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 
 from core.config import get_settings
 from core.supabase import get_supabase
-from routers import admin, convert, generate, history, me, prompts
+from routers import admin, convert, generate, generate_history, history, me, prompts
 from services.conversion_runner import recover_pending_conversions
 from services.generation_runner import recover_pending_generations
 
 logging.basicConfig(level=logging.INFO)
+
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 @asynccontextmanager
@@ -21,7 +30,28 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="CV Converter API", lifespan=lifespan)
+_is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
+
+app = FastAPI(
+    title="CV Converter API",
+    lifespan=lifespan,
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
 
 _settings = get_settings()
 _origins = [o.strip() for o in _settings.allowed_origins.split(",") if o.strip()]
@@ -29,13 +59,19 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins or ["http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Auth0-ID-Token"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get("/health")
 async def health():
+    return {"status": "ok"}
+
+
+@app.get("/health/full")
+async def health_full():
     try:
         sb = get_supabase()
         await asyncio.to_thread(lambda: sb.table("profiles").select("id").limit(1).execute())
@@ -47,6 +83,7 @@ async def health():
 
 app.include_router(me.router, prefix="/api")
 app.include_router(convert.router, prefix="/api")
+app.include_router(generate_history.router, prefix="/api")
 app.include_router(generate.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")

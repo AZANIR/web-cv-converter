@@ -11,7 +11,8 @@ def _load_prompt_template() -> str:
 
 def _build_prompt(md_content: str) -> str:
     template = _load_prompt_template()
-    return template.replace("[INSERT CV MARKDOWN HERE]", md_content)
+    delimited_content = f"<user_document>\n{md_content}\n</user_document>"
+    return template.replace("[INSERT CV MARKDOWN HERE]", delimited_content)
 
 
 def convert_md_to_json(md_content: str) -> dict:

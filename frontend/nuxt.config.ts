@@ -34,6 +34,6 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8000',
     },
   },
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
   compatibilityDate: '2024-11-01',
 })

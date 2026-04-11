@@ -54,7 +54,7 @@ async def test_generate_no_input_400(client):
 
 async def test_get_cv_not_found(client, mock_supabase):
     mock_supabase.execute.return_value = MagicMock(data=[])
-    resp = await client.get("/api/generate/nonexistent")
+    resp = await client.get("/api/generate/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 404
 
 
@@ -62,7 +62,7 @@ async def test_get_cv_success(client, mock_supabase):
     from tests.conftest import FAKE_USER
 
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "vacancy_id": "vac-1",
         "md_content": "# CV",
@@ -73,7 +73,7 @@ async def test_get_cv_success(client, mock_supabase):
         "pdf_storage_path": None,
     }])
 
-    resp = await client.get("/api/generate/cv-1")
+    resp = await client.get("/api/generate/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "draft"
@@ -82,7 +82,7 @@ async def test_get_cv_success(client, mock_supabase):
 
 async def test_get_cv_wrong_user_404(client, mock_supabase):
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": "other-user",
         "vacancy_id": "vac-1",
         "md_content": "# CV",
@@ -92,7 +92,7 @@ async def test_get_cv_wrong_user_404(client, mock_supabase):
         "created_at": "2025-01-01",
         "pdf_storage_path": None,
     }])
-    resp = await client.get("/api/generate/cv-1")
+    resp = await client.get("/api/generate/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 404
 
 
@@ -101,12 +101,12 @@ async def test_update_cv_md(mock_embed, client, mock_supabase):
     from tests.conftest import FAKE_USER
 
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
     }])
 
     resp = await client.put(
-        "/api/generate/cv-1",
+        "/api/generate/00000000-0000-0000-0000-000000000001",
         data={"md_content": "# Updated CV"},
     )
     assert resp.status_code == 200
@@ -125,7 +125,7 @@ async def test_convert_cv_to_pdf(mock_check_rate, mock_schedule, client, mock_su
     mock_supabase.update.return_value = mock_supabase
     
     cv_result = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "vacancy_id": "vac-1",
         "md_content": "# CV Content",
@@ -138,7 +138,7 @@ async def test_convert_cv_to_pdf(mock_check_rate, mock_schedule, client, mock_su
     mock_supabase.execute.side_effect = [cv_result, MagicMock(), MagicMock()]
 
     resp = await client.post(
-        "/api/generate/cv-1/convert",
+        "/api/generate/00000000-0000-0000-0000-000000000001/convert",
         data={"include_header": "true"},
     )
     assert resp.status_code == 200
@@ -153,7 +153,7 @@ async def test_convert_empty_md_400(mock_schedule, client, mock_supabase):
     from tests.conftest import FAKE_USER
 
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "vacancy_id": "vac-1",
         "md_content": None,
@@ -163,7 +163,7 @@ async def test_convert_empty_md_400(mock_schedule, client, mock_supabase):
         "pdf_storage_path": None,
     }])
 
-    resp = await client.post("/api/generate/cv-1/convert", data={"include_header": "true"})
+    resp = await client.post("/api/generate/00000000-0000-0000-0000-000000000001/convert", data={"include_header": "true"})
     assert resp.status_code == 400
 
 
@@ -171,12 +171,12 @@ async def test_delete_cv(client, mock_supabase):
     from tests.conftest import FAKE_USER
 
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "cv-1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "pdf_storage_path": None,
     }])
 
-    resp = await client.delete("/api/generate/cv-1")
+    resp = await client.delete("/api/generate/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 200
 
 

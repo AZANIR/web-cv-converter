@@ -9,6 +9,7 @@ from services.storage_service import (
     _user_storage_prefix,
     upload_pdf,
     get_signed_url,
+    delete_object,
     BUCKET,
 )
 
@@ -110,3 +111,22 @@ class TestGetSignedUrl:
 
         with pytest.raises(RuntimeError, match="Unexpected"):
             get_signed_url("some/path.pdf")
+
+
+class TestDeleteObject:
+    @patch("services.storage_service.get_supabase")
+    def test_deletes_object_from_bucket(self, mock_get_sb):
+        mock_sb = MagicMock()
+        mock_get_sb.return_value = mock_sb
+
+        delete_object("prefix/uuid/file.pdf")
+
+        mock_sb.storage.from_.assert_called_once_with(BUCKET)
+        mock_sb.storage.from_().remove.assert_called_once_with(["prefix/uuid/file.pdf"])
+
+    @patch("services.storage_service.get_supabase")
+    def test_handles_nonexistent_path(self, mock_get_sb):
+        mock_sb = MagicMock()
+        mock_get_sb.return_value = mock_sb
+
+        delete_object("nonexistent/path.pdf")  # should not raise
