@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 import httpx
 
 from core.ai_client import get_ai_client
-from core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -86,9 +85,9 @@ def extract_text_from_file(content: bytes, filename: str) -> str:
     raise ValueError(f"Unsupported file type: {filename}")
 
 
-def templatize_vacancy(raw_text: str, prompt_content: str, s: Settings | None = None) -> dict[str, Any]:
+def templatize_vacancy(raw_text: str, prompt_content: str) -> dict[str, Any]:
     """Use AI to convert raw vacancy text into structured case study JSON."""
     delimited_text = f"<user_content>\n{raw_text}\n</user_content>"
     full_prompt = prompt_content.replace("{{VACANCY_TEXT}}", delimited_text)
-    client = get_ai_client(s)
+    client = get_ai_client()
     return client.generate_json(full_prompt, temperature=0.2)
