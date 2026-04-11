@@ -1,35 +1,29 @@
-import httpx
-from cachetools import TTLCache
+import jwt
+from jwt import PyJWKClient
 from fastapi import Depends, Header, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt, jwk
 
 from .config import get_settings
 from .supabase import get_supabase
 
 security = HTTPBearer(auto_error=False)
 
-_jwks_cache: TTLCache = TTLCache(maxsize=1, ttl=3600)
+_jwk_clients: dict[str, PyJWKClient] = {}
 
 
-def _jwks_json(domain: str) -> dict:
-    if domain not in _jwks_cache:
+def _get_jwk_client(domain: str) -> PyJWKClient:
+    if domain not in _jwk_clients:
         url = f"https://{domain}/.well-known/jwks.json"
-        with httpx.Client(timeout=10.0) as client:
-            r = client.get(url)
-            r.raise_for_status()
-            _jwks_cache[domain] = r.json()
-    return _jwks_cache[domain]
+        _jwk_clients[domain] = PyJWKClient(url, cache_keys=True)
+    return _jwk_clients[domain]
 
 
 def _get_signing_key(token: str, domain: str):
-    jwks = _jwks_json(domain)
-    headers = jwt.get_unverified_header(token)
-    kid = headers.get("kid")
-    for key in jwks.get("keys", []):
-        if key.get("kid") == kid:
-            return jwk.construct(key)
-    return None
+    client = _get_jwk_client(domain)
+    try:
+        return client.get_signing_key_from_jwt(token)
+    except Exception:
+        return None
 
 
 def _token_email(payload: dict) -> str | None:
@@ -65,12 +59,12 @@ async def decode_auth0_token(token: str) -> dict:
     try:
         payload = jwt.decode(
             token,
-            key,
+            key.key,
             algorithms=["RS256"],
             audience=s.auth0_api_audience,
             issuer=f"https://{s.auth0_domain}/",
         )
-    except JWTError:
+    except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
     return payload
@@ -138,12 +132,12 @@ async def get_current_user(
             try:
                 id_payload = jwt.decode(
                     id_token_header,
-                    id_key,
+                    id_key.key,
                     algorithms=["RS256"],
                     audience=s.auth0_client_id,
                     issuer=f"https://{s.auth0_domain}/",
                 )
-            except JWTError:
+            except jwt.PyJWTError:
                 raise HTTPException(status_code=401, detail="Invalid id token")
             if id_payload.get("sub") != user_id:
                 raise HTTPException(status_code=401, detail="Token subject mismatch")

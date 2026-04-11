@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from unittest.mock import patch, MagicMock
 
+import jwt as pyjwt
 import pytest
 from fastapi import HTTPException
 
@@ -132,4 +134,60 @@ class TestDecodeAuth0Token:
         mock_get_key.return_value = None
         with pytest.raises(HTTPException) as exc:
             await decode_auth0_token("some-token")
+        assert exc.value.status_code == 401
+
+
+
+class TestJWTAlgorithmRestriction:
+    """Verify that decode_auth0_token rejects algorithm confusion attacks (CVE-2024-33663/33664)."""
+
+    @patch("core.auth._get_signing_key")
+    @patch("core.auth.get_settings")
+    async def test_rejects_alg_none(self, mock_settings, mock_get_key):
+        """Tokens with alg=none must be rejected."""
+        mock_settings.return_value = MagicMock(
+            auth0_domain="test.auth0.com",
+            auth0_api_audience="https://api",
+        )
+        # Craft a token with alg: none (unsigned)
+        header = json.dumps({"alg": "none", "typ": "JWT"})
+        import base64
+        h_b64 = base64.urlsafe_b64encode(header.encode()).rstrip(b"=").decode()
+        payload = json.dumps({"sub": "auth0|123", "aud": "https://api", "iss": "https://test.auth0.com/"})
+        p_b64 = base64.urlsafe_b64encode(payload.encode()).rstrip(b"=").decode()
+        none_token = f"{h_b64}.{p_b64}."
+
+        # _get_signing_key will fail on a none-alg token (no kid), returning None
+        mock_get_key.return_value = None
+
+        with pytest.raises(HTTPException) as exc:
+            await decode_auth0_token(none_token)
+        assert exc.value.status_code == 401
+
+    @patch("core.auth._get_signing_key")
+    @patch("core.auth.get_settings")
+    async def test_rejects_hs256_token(self, mock_settings, mock_get_key):
+        """HS256 tokens must be rejected because decode only allows RS256."""
+        hmac_secret = "super-secret-key"
+
+        mock_settings.return_value = MagicMock(
+            auth0_domain="test.auth0.com",
+            auth0_api_audience="https://api",
+        )
+
+        # Create a valid HS256 token
+        hs256_token = pyjwt.encode(
+            {"sub": "auth0|123", "aud": "https://api", "iss": "https://test.auth0.com/"},
+            hmac_secret,
+            algorithm="HS256",
+        )
+
+        # Simulate _get_signing_key returning a mock key whose .key is the HMAC secret
+        mock_key = MagicMock()
+        mock_key.key = hmac_secret
+        mock_get_key.return_value = mock_key
+
+        # PyJWT with algorithms=["RS256"] must reject the HS256 token
+        with pytest.raises(HTTPException) as exc:
+            await decode_auth0_token(hs256_token)
         assert exc.value.status_code == 401
