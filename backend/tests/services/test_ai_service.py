@@ -34,7 +34,7 @@ class TestBuildPrompt:
     def test_inserts_markdown(self, mock_load):
         mock_load.return_value = "Template: [INSERT CV MARKDOWN HERE]"
         result = _build_prompt("# My CV")
-        assert result == "Template: # My CV"
+        assert result == "Template: <user_document>\n# My CV\n</user_document>"
 
 
 class TestConvertMdToJson:
