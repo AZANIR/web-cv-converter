@@ -1,8 +1,6 @@
 import { sendRedirect } from 'h3'
-// nuxt-auth-utils does not re-export server runtime functions via #auth-utils (types only).
-// Deep imports are required until the package exposes a public server entry point.
-import { defineOAuthAuth0EventHandler } from 'nuxt-auth-utils/dist/runtime/server/lib/oauth/auth0'
-import { setUserSession } from 'nuxt-auth-utils/dist/runtime/server/utils/session'
+import { defineOAuthAuth0EventHandler } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/lib/oauth/auth0.js'
+import { setUserSession } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/utils/session.js'
 
 export default defineOAuthAuth0EventHandler({
   config: {
