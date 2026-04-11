@@ -54,7 +54,7 @@ async def test_get_conversion_status_404_when_not_found(client, mock_supabase):
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(data=[])
 
-    resp = await client.get("/api/conversions/nonexistent")
+    resp = await client.get("/api/conversions/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 404
 
 
@@ -64,10 +64,10 @@ async def test_get_conversion_status_404_for_wrong_user(client, mock_supabase):
     mock_supabase.eq.return_value = mock_supabase
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(
-        data=[{"id": "c1", "user_id": "other-user", "status": "completed"}]
+        data=[{"id": "00000000-0000-0000-0000-000000000001", "user_id": "other-user", "status": "completed"}]
     )
 
-    resp = await client.get("/api/conversions/c1")
+    resp = await client.get("/api/conversions/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 404
 
 
@@ -80,7 +80,7 @@ async def test_get_conversion_status_success(client, mock_supabase):
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(
         data=[{
-            "id": "c1",
+            "id": "00000000-0000-0000-0000-000000000001",
             "user_id": FAKE_USER["user_id"],
             "status": "processing",
             "original_filename": "cv.md",
@@ -90,6 +90,6 @@ async def test_get_conversion_status_success(client, mock_supabase):
         }]
     )
 
-    resp = await client.get("/api/conversions/c1")
+    resp = await client.get("/api/conversions/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 200
     assert resp.json()["status"] == "processing"

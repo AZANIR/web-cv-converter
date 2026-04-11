@@ -28,14 +28,14 @@ async def test_history_download_success(mock_storage, client, mock_supabase):
     mock_supabase.eq.return_value = mock_supabase
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "c1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "status": "completed",
         "pdf_storage_path": "path/to/file.pdf",
     }])
     mock_storage.get_signed_url.return_value = "https://signed.url"
 
-    resp = await client.get("/api/history/c1/download")
+    resp = await client.get("/api/history/00000000-0000-0000-0000-000000000001/download")
     assert resp.status_code == 200
     assert resp.json()["download_url"] == "https://signed.url"
 
@@ -47,7 +47,7 @@ async def test_history_download_404_not_found(client, mock_supabase):
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(data=[])
 
-    resp = await client.get("/api/history/nonexistent/download")
+    resp = await client.get("/api/history/00000000-0000-0000-0000-000000000002/download")
     assert resp.status_code == 404
 
 
@@ -58,12 +58,12 @@ async def test_delete_history_item(client, mock_supabase):
     mock_supabase.limit.return_value = mock_supabase
     mock_supabase.delete.return_value = mock_supabase
     mock_supabase.execute.return_value = MagicMock(data=[{
-        "id": "c1",
+        "id": "00000000-0000-0000-0000-000000000001",
         "user_id": FAKE_USER["user_id"],
         "pdf_storage_path": None,
     }])
 
-    resp = await client.delete("/api/history/c1")
+    resp = await client.delete("/api/history/00000000-0000-0000-0000-000000000001")
     assert resp.status_code == 200
     assert resp.json()["ok"] is True
 

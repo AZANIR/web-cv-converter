@@ -56,11 +56,11 @@ async def convert_cv(
 
 @router.get("/conversions/{conversion_id}")
 async def get_conversion_status(
-    conversion_id: str,
+    conversion_id: uuid.UUID,
     user: dict = Depends(get_current_user),
     sb: Client = Depends(get_supabase),
 ):
-    res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
+    res = sb.table("conversions").select("*").eq("id", str(conversion_id)).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
     row = res.data[0]
@@ -93,11 +93,11 @@ async def get_conversion_status(
 
 @router.post("/regenerate/{conversion_id}")
 async def regenerate_cv(
-    conversion_id: str,
+    conversion_id: uuid.UUID,
     user: dict = Depends(get_current_user),
     sb: Client = Depends(get_supabase),
 ):
-    res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
+    res = sb.table("conversions").select("*").eq("id", str(conversion_id)).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Not found")
     row = res.data[0]
@@ -114,8 +114,8 @@ async def regenerate_cv(
             "pdf_storage_path": None,
             "pdf_filename": None,
         }
-    ).eq("id", conversion_id).execute()
+    ).eq("id", str(conversion_id)).execute()
 
-    schedule_conversion(conversion_id)
+    schedule_conversion(str(conversion_id))
 
-    return {"conversion_id": conversion_id}
+    return {"conversion_id": str(conversion_id)}
