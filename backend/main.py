@@ -4,6 +4,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from core.config import get_settings
 from core.supabase import get_supabase
@@ -12,6 +15,8 @@ from services.conversion_runner import recover_pending_conversions
 from services.generation_runner import recover_pending_generations
 
 logging.basicConfig(level=logging.INFO)
+
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 @asynccontextmanager
@@ -22,6 +27,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="CV Converter API", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 _settings = get_settings()
 _origins = [o.strip() for o in _settings.allowed_origins.split(",") if o.strip()]
