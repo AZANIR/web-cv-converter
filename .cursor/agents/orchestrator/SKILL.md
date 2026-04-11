@@ -16,6 +16,8 @@ Receives every task, classifies it by type, delegates to the correct agent or ch
 - "ui feature" / `@orchestrator chain:ui-feature`
 - "review only" / `@orchestrator chain:review`
 - "stabilize tests" / `@orchestrator chain:stabilize`
+- "security audit" / `@orchestrator chain:security-audit`
+- "fix security issue" / `@orchestrator chain:security-fix`
 - Any ambiguous task that spans multiple agents
 
 ## Decision Logic
@@ -38,14 +40,14 @@ Receives every task, classifies it by type, delegates to the correct agent or ch
 ## Cannot Do
 
 - Produce implementation artifacts (code, specs, tests)
-- Override a blocking issue raised by Code Reviewer
+- Override a blocking issue raised by Code Reviewer or Pentester
 - Execute chains in parallel on the same file
 
 ## Will Not Do
 
 - Modify production configurations
 - Skip the Memory Keeper step at chain end
-- Route security-critical tasks without Code Reviewer involvement
+- Route security-critical tasks without Pentester and/or Code Reviewer involvement
 
 ## Workflow
 

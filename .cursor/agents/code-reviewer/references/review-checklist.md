@@ -74,3 +74,11 @@ Apply this checklist to every file in the handoff object.
 - [ ] Tests cover happy path + at least one error/edge case
 - [ ] No hardcoded credentials in test fixtures
 - [ ] Tests are deterministic (no `time.sleep` or random without seed)
+
+## Post-Pentest Validation
+
+When running after pentester in the `security-audit` or `security-fix` chain:
+- [ ] Cross-reference pentester findings with actual code patterns
+- [ ] Verify that flagged files match the reported vulnerability type
+- [ ] Flag any additional related vulnerabilities in the same files
+- [ ] Confirm remediation guidance is actionable and specific
