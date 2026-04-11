@@ -1,6 +1,6 @@
 import { sendRedirect } from 'h3'
-import { defineOAuthAuth0EventHandler } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/lib/oauth/auth0.js'
-import { setUserSession } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/utils/session.js'
+import { defineOAuthAuth0EventHandler } from '#auth-utils'
+import { setUserSession } from '#auth-utils'
 
 export default defineOAuthAuth0EventHandler({
   config: {

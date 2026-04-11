@@ -1,5 +1,5 @@
 import { sendRedirect } from 'h3'
-import { clearUserSession } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/utils/session.js'
+import { clearUserSession } from '#auth-utils'
 
 export default defineEventHandler(async (event) => {
   await clearUserSession(event)
