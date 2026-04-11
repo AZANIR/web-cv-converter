@@ -71,6 +71,15 @@ async def test_get_conversion_status_404_for_wrong_user(client, mock_supabase):
     assert resp.status_code == 404
 
 
+async def test_rejects_invalid_content_type(client, mock_supabase):
+    import io
+
+    files = {"file": ("test.md", io.BytesIO(b"# Hello"), "application/pdf")}
+    resp = await client.post("/api/convert", files=files, data={"include_header": "true"})
+    assert resp.status_code == 400
+    assert "Invalid file type" in resp.json()["detail"]
+
+
 async def test_get_conversion_status_success(client, mock_supabase):
     from tests.conftest import FAKE_USER
 

@@ -26,6 +26,14 @@ async def convert_cv(
     if not file.filename or not file.filename.lower().endswith(".md"):
         raise HTTPException(status_code=400, detail="Only .md files are allowed")
 
+    if file.content_type and file.content_type not in (
+        "text/markdown",
+        "text/x-markdown",
+        "text/plain",
+        "application/octet-stream",
+    ):
+        raise HTTPException(status_code=400, detail="Invalid file type")
+
     raw = await file.read()
     if len(raw) > s.max_upload_bytes:
         raise HTTPException(status_code=400, detail="File too large (max 5 MB)")
