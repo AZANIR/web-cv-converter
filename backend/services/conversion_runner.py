@@ -38,12 +38,12 @@ async def run_conversion_pipeline(conversion_id: str) -> None:
                 "error_message": None,
             }
         ).eq("id", conversion_id).execute()
-    except Exception as e:
+    except Exception:
         logger.exception("Conversion %s failed", conversion_id)
         sb.table("conversions").update(
             {
                 "status": "failed",
-                "error_message": str(e)[:2000],
+                "error_message": "Conversion failed. Please try again or contact support.",
             }
         ).eq("id", conversion_id).execute()
 

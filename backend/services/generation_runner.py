@@ -92,15 +92,16 @@ async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
             doc_id=cv_id,
         )
 
-    except Exception as e:
+    except Exception:
         logger.exception("Generation pipeline failed for vacancy=%s cv=%s", vacancy_id, cv_id)
+        generic_msg = "Generation failed. Please try again or contact support."
         sb.table("vacancies").update({
             "status": "failed",
-            "error_message": str(e)[:2000],
+            "error_message": generic_msg,
         }).eq("id", vacancy_id).execute()
         sb.table("generated_cvs").update({
             "status": "failed",
-            "error_message": str(e)[:2000],
+            "error_message": generic_msg,
         }).eq("id", cv_id).execute()
 
 
