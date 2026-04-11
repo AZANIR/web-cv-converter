@@ -48,4 +48,47 @@ describe('MdEditor', () => {
     const saveBtn = wrapper.findAll('button').find(b => b.text() === 'Save')
     expect(saveBtn).toBeUndefined()
   })
+
+  describe('XSS sanitization', () => {
+    it('strips script tags from rendered markdown', async () => {
+      const wrapper = await mountSuspended(MdEditor, {
+        props: { modelValue: '<script>alert("XSS")</script>' },
+      })
+      const preview = wrapper.find('.prose')
+      // MarkdownIt escapes HTML by default; DOMPurify provides defense-in-depth
+      expect(preview.html()).not.toContain('<script>')
+    })
+
+    it('strips onerror from img tags', async () => {
+      const wrapper = await mountSuspended(MdEditor, {
+        props: { modelValue: '<img onerror=alert("XSS") src=x>' },
+      })
+      const preview = wrapper.find('.prose')
+      // Verify no raw onerror attribute is present in actual DOM elements
+      const imgs = preview.findAll('img')
+      imgs.forEach((img) => {
+        expect(img.attributes('onerror')).toBeUndefined()
+      })
+    })
+
+    it('preserves safe markdown links', async () => {
+      const wrapper = await mountSuspended(MdEditor, {
+        props: { modelValue: '[Example](https://example.com)' },
+      })
+      const preview = wrapper.find('.prose')
+      expect(preview.html()).toContain('href="https://example.com"')
+      expect(preview.html()).toContain('Example')
+    })
+
+    it('does not render javascript: protocol as link href', async () => {
+      const wrapper = await mountSuspended(MdEditor, {
+        props: { modelValue: '[click me](javascript:alert("XSS"))' },
+      })
+      const preview = wrapper.find('.prose')
+      const links = preview.findAll('a')
+      links.forEach((link) => {
+        expect(link.attributes('href') ?? '').not.toContain('javascript:')
+      })
+    })
+  })
 })

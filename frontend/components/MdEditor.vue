@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 
 const props = defineProps<{
   modelValue: string
@@ -32,7 +33,7 @@ watch(() => props.modelValue, (val) => {
 })
 
 watch(localContent, (val) => {
-  renderedHtml.value = md.render(val || '')
+  renderedHtml.value = DOMPurify.sanitize(md.render(val || ''))
   emit('update:modelValue', val)
 }, { immediate: true })
 
