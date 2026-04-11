@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import json
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -41,47 +40,46 @@ class TestExtractTextFromFile:
             extract_text_from_file(b"data", "job.docx")
 
 
-@pytest.mark.anyio
 class TestExtractTextFromUrl:
-    async def test_parse_url(self):
+    def test_parse_url(self):
         mock_resp = MagicMock()
         mock_resp.text = "<html><body>Job description here</body></html>"
         mock_resp.raise_for_status = MagicMock()
 
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client = MagicMock()
+        mock_client.get.return_value = mock_resp
 
         with (
-            patch("services.vacancy_parser.httpx.AsyncClient") as mock_cls,
+            patch("services.vacancy_parser.httpx.Client") as mock_cls,
             patch("trafilatura.extract", return_value="Job description here"),
         ):
-            mock_cls.return_value.__aenter__ = AsyncMock(return_value=mock_client)
-            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+            mock_cls.return_value.__enter__ = MagicMock(return_value=mock_client)
+            mock_cls.return_value.__exit__ = MagicMock(return_value=False)
 
             from services.vacancy_parser import extract_text_from_url
 
-            result = await extract_text_from_url("https://example.com/job")
+            result = extract_text_from_url("https://example.com/job")
             assert result == "Job description here"
 
-    async def test_parse_url_no_content_raises(self):
+    def test_parse_url_no_content_raises(self):
         mock_resp = MagicMock()
         mock_resp.text = "<html></html>"
         mock_resp.raise_for_status = MagicMock()
 
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client = MagicMock()
+        mock_client.get.return_value = mock_resp
 
         with (
-            patch("services.vacancy_parser.httpx.AsyncClient") as mock_cls,
+            patch("services.vacancy_parser.httpx.Client") as mock_cls,
             patch("trafilatura.extract", return_value=None),
         ):
-            mock_cls.return_value.__aenter__ = AsyncMock(return_value=mock_client)
-            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+            mock_cls.return_value.__enter__ = MagicMock(return_value=mock_client)
+            mock_cls.return_value.__exit__ = MagicMock(return_value=False)
 
             from services.vacancy_parser import extract_text_from_url
 
             with pytest.raises(ValueError, match="Could not extract"):
-                await extract_text_from_url("https://example.com/empty")
+                extract_text_from_url("https://example.com/empty")
 
 
 class TestUrlValidation:

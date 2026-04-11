@@ -53,13 +53,18 @@ def _validate_url(url: str) -> None:
             raise ValueError(f"Internal/private IP addresses are not allowed: {ip_str}")
 
 
-async def extract_text_from_url(url: str) -> str:
-    """Fetch URL and extract main text content."""
-    _validate_url(url)
+def extract_text_from_url(url: str) -> str:
+    """Fetch URL and extract main text content.
+
+    This is intentionally synchronous so it can be safely used with
+    ``asyncio.to_thread`` from async callers.
+    """
     import trafilatura
 
-    async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
-        resp = await client.get(url)
+    _validate_url(url)
+
+    with httpx.Client(follow_redirects=True, timeout=30) as client:
+        resp = client.get(url)
         resp.raise_for_status()
     extracted = trafilatura.extract(resp.text, include_comments=False, include_tables=False)
     if not extracted:
