@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ['auth'] })
+
 type Row = {
   id: string
   original_filename: string
