@@ -67,6 +67,11 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 @app.get("/health")
 async def health():
+    return {"status": "ok"}
+
+
+@app.get("/health/full")
+async def health_full():
     try:
         sb = get_supabase()
         await asyncio.to_thread(lambda: sb.table("profiles").select("id").limit(1).execute())
