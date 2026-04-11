@@ -1,6 +1,5 @@
 import { sendRedirect } from 'h3'
-// nuxt-auth-utils does not re-export server runtime functions via #auth-utils (types only).
-import { clearUserSession } from 'nuxt-auth-utils/dist/runtime/server/utils/session'
+import { clearUserSession } from '../../../node_modules/nuxt-auth-utils/dist/runtime/server/utils/session.js'
 
 export default defineEventHandler(async (event) => {
   await clearUserSession(event)
