@@ -1,19 +1,5 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const { session } = useUserSession()
-
-function apiHeaders(): Record<string, string> {
-  const token = session.value?.accessToken as string | undefined
-  const idToken = session.value?.idToken as string | undefined
-  const h: Record<string, string> = {}
-  if (token) {
-    h.Authorization = `Bearer ${token}`
-  }
-  if (idToken) {
-    h['X-Auth0-ID-Token'] = idToken
-  }
-  return h
-}
+const api = useApiRequest()
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const file = ref<File | null>(null)
@@ -90,10 +76,9 @@ async function convert() {
   form.append('file', file.value)
   form.append('include_header', String(includeHeader.value))
   try {
-    const res = await $fetch<{ conversion_id: string }>(`${config.public.apiBase}/api/convert`, {
+    const res = await api<{ conversion_id: string }>('/api/convert', {
       method: 'POST',
       body: form,
-      headers: apiHeaders(),
     })
     conversionId.value = res.conversion_id
     remoteStatus.value = 'pending'
@@ -113,13 +98,11 @@ function startPoll() {
       return
     }
     try {
-      const st = await $fetch<{
+      const st = await api<{
         status: string
         download_url?: string
         error_message?: string
-      }>(`${config.public.apiBase}/api/conversions/${conversionId.value}`, {
-        headers: apiHeaders(),
-      })
+      }>(`/api/conversions/${conversionId.value}`)
       remoteStatus.value = st.status
       if (st.status === 'completed' && st.download_url) {
         downloadUrl.value = st.download_url
