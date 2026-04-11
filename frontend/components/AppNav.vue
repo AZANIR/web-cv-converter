@@ -13,6 +13,7 @@ onMounted(async () => {
     isAdmin.value = me?.role === 'admin'
   }
   catch {
+    // Non-critical: admin check failure just hides admin links
     isAdmin.value = false
   }
 })
