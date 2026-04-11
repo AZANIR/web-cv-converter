@@ -173,6 +173,7 @@ async function retryConversion() {
       ref="fileInput"
       type="file"
       accept=".md,text/markdown"
+      aria-label="Upload Markdown file"
       class="hidden"
       @change="(e) => setFile((e.target as HTMLInputElement).files?.[0] || null)"
     >
@@ -183,6 +184,7 @@ async function retryConversion() {
       :class="dragOver ? 'ring-2 ring-cv-teal ring-offset-2' : ''"
       role="button"
       tabindex="0"
+      aria-label="File upload area"
       @click="fileInput?.click()"
       @keydown.enter="fileInput?.click()"
       @dragover.prevent="dragOver = true"
@@ -236,6 +238,7 @@ async function retryConversion() {
         type="button"
         role="switch"
         :aria-checked="includeHeader"
+        aria-label="Include header image"
         class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cv-teal"
         :class="includeHeader ? 'bg-cv-teal' : 'bg-cv-divider'"
         @click="includeHeader = !includeHeader"
