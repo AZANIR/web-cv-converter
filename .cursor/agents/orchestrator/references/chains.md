@@ -88,3 +88,42 @@ tester (flaky detection) → code-reviewer → memory-keeper
 | tester | test run results / specific test files | flaky test analysis + fixed test files |
 | code-reviewer | fixed test files | review report |
 | memory-keeper | chain summary | log to `docs/qa-memory/regressions.md` |
+
+---
+
+## Chain: security-audit
+
+**Command:** `@orchestrator chain:security-audit`
+**Use when:** Performing a full or scoped security audit of the application.
+
+```
+pentester → code-reviewer → memory-keeper
+```
+
+| Step | Input | Output |
+|---|---|---|
+| pentester | scope (full / specific endpoints / specific OWASP category) | `reports/security/pentest-{date}-{scope}.md` |
+| code-reviewer | pentest report + flagged file paths | review report validating findings against code |
+| memory-keeper | chain summary | log to `docs/qa-memory/` + `memory-bank/` |
+
+**Note:** Code-reviewer follows pentester to cross-validate findings against actual code patterns and catch related issues in flagged files.
+
+---
+
+## Chain: security-fix
+
+**Command:** `@orchestrator chain:security-fix`
+**Use when:** Fixing security vulnerabilities found by pentester and verifying the fix.
+
+```
+backend/frontend → pentester → code-reviewer → memory-keeper
+```
+
+| Step | Input | Output |
+|---|---|---|
+| backend or frontend | vulnerability report + remediation guidance | fixed implementation files |
+| pentester | fixed files + original findings | re-test report confirming fix |
+| code-reviewer | fixed files + re-test report | review report |
+| memory-keeper | chain summary | log to `docs/qa-memory/` |
+
+**Note:** First step routes to backend or frontend based on the file paths in the vulnerability report. Orchestrator decides based on whether flagged files are in `backend/` or `frontend/`.

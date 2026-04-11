@@ -64,6 +64,19 @@ Complete classification of task types with decision criteria.
 
 ---
 
+## security
+
+**Triggers:**
+- "pentest / security test / vulnerability scan"
+- "OWASP test / test for injection / XSS / SSRF"
+- "check for CVEs / dependency scan"
+- "security audit / audit for vulnerabilities"
+- "test auth bypass / test rate limiting"
+
+**Files touched:** pentester reads implementation files, writes report to `reports/security/`
+
+---
+
 ## chain:*
 
 **Triggers:** Explicit `@orchestrator chain:<name>` command.
@@ -91,3 +104,8 @@ If a task could be `write:backend` OR `write:frontend`:
 2. Route based on answer.
 
 If a task is clearly both (full feature), default to `@orchestrator chain:feature`.
+
+If a task could be `review` OR `security`:
+- `review` = static code analysis by code-reviewer (style, correctness, basic security checks)
+- `security` = active vulnerability testing by pentester (OWASP, payloads, config audit)
+- If unclear, ask: "Do you want a code review or a security pentest?"

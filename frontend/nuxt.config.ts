@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'CV Converter',
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      ],
       meta: [
         { name: 'description', content: 'Convert Markdown CVs to PDF with AI' },
       ],

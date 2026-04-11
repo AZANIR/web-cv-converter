@@ -31,6 +31,7 @@ Create the directory on first use if it does not exist.
 | tester (E2E) | `tests/e2e/` | `{flow}.spec.ts` |
 | tester (coverage report) | `reports/coverage/` | `coverage-{date}.md` |
 | code-reviewer (report) | `reports/reviews/` | `review-{date}-{feature}.md` |
+| pentester (report) | `reports/security/` | `pentest-{date}-{scope}.md` |
 | memory-keeper (QA log) | `docs/qa-memory/` | see memory schema |
 | memory-keeper (context) | `memory-bank/` | see memory-bank schema |
 

@@ -16,10 +16,11 @@ The Orchestrator classifies every incoming request before routing. Task type is 
 | `write:docs` | document | "update the API contract", "write an ADR", "document this" |
 | `write:tests` | tester | "write tests for", "add coverage for", "test this" |
 | `review` | code-reviewer | "review my changes", "audit this file", "check for issues" |
+| `security` | pentester | "pentest this", "security test", "vulnerability scan", "OWASP audit" |
 | `chain:*` | orchestrator (routes) | `@orchestrator chain:<name>` |
 | `memory:*` | memory-keeper | "what bugs do we know", "init qa memory", "log this decision" |
 
-**Rule:** "write" tasks → domain agent first, then code-reviewer. "review/audit" tasks → code-reviewer only. Two agents never run in parallel on the same file.
+**Rule:** "write" tasks → domain agent first, then code-reviewer. "review/audit" tasks → code-reviewer only. "security" tasks → pentester. Two agents never run in parallel on the same file.
 
 ## Explicit Agent Invocation
 
@@ -29,6 +30,9 @@ Use `@<agent-name>` to invoke a specific agent directly:
 - `@tester write pytest for convert router` — route directly to tester agent
 - `@memory-keeper init` — initialize QA memory
 - `@code-reviewer audit backend/routers/convert.py` — direct review
+- `@pentester test auth bypass on convert endpoint` — direct security test
+- `@orchestrator chain:security-audit` — run the security-audit chain
+- `@orchestrator chain:security-fix` — run the security-fix chain
 
 ## Predefined Chains
 
@@ -39,6 +43,8 @@ Use `@<agent-name>` to invoke a specific agent directly:
 | **ui-feature** | `@orchestrator chain:ui-feature` | document → frontend → code-reviewer → tester (vitest + playwright) → memory-keeper |
 | **review-only** | `@orchestrator chain:review` | code-reviewer → memory-keeper |
 | **stabilize** | `@orchestrator chain:stabilize` | tester (flaky detection) → code-reviewer → memory-keeper |
+| **security-audit** | `@orchestrator chain:security-audit` | pentester → code-reviewer → memory-keeper |
+| **security-fix** | `@orchestrator chain:security-fix` | backend/frontend → pentester → code-reviewer → memory-keeper |
 
 See `.cursor/agents/orchestrator/references/chains.md` for per-chain input/output contracts.
 
@@ -59,13 +65,14 @@ handoff:
     blocking_issues: []       # non-empty = Orchestrator halts chain
 ```
 
-**Blocking behavior:** If `blocking_issues` is non-empty after code-reviewer runs, the Orchestrator surfaces the issues to the user and halts the chain. The user must resolve and re-run from the blocking step.
+**Blocking behavior:** If `blocking_issues` is non-empty after code-reviewer or pentester runs, the Orchestrator surfaces the issues to the user and halts the chain. The user must resolve and re-run from the blocking step.
 
 ## Conflict Resolution
 
 Single rule — task type decides:
 - "write endpoint validation" → `write:backend` → backend implements → code-reviewer audits
 - "review the validation" → `review` → code-reviewer only
+- "pentest the validation" → `security` → pentester only
 
 Memory Keeper always runs last in every chain, never skipped.
 
