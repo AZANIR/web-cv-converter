@@ -1,6 +1,4 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['auth'] })
-
 const api = useApiRequest()
 const router = useRouter()
 const toast = useToast()
