@@ -1,3 +1,6 @@
+// Plugin runs before app composables are fully available.
+// useApiRequest() depends on useNuxtApp().$apiFetch which may not exist yet.
+// Using $fetch with useAuthApiHeaders() directly is intentional here.
 export default defineNuxtPlugin(async () => {
   const route = useRoute()
   const skip = ['/', '/login', '/access-denied']
