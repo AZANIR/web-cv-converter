@@ -12,6 +12,7 @@ services:
       - ./backend/assets:/app/assets:ro
       - ./backend/styles.json:/app/styles.json:ro
       - ./backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
+      - ./backend/logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
