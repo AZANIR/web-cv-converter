@@ -9,6 +9,8 @@ const conversionId = ref<string | null>(null)
 const remoteStatus = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
 const downloadUrl = ref<string | null>(null)
+const POLL_INTERVAL_MS = 3000
+const MAX_POLL_DURATION_MS = 90000
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
 function stopPoll() {
@@ -93,8 +95,14 @@ async function convert() {
 
 function startPoll() {
   stopPoll()
+  const startedAt = Date.now()
   pollTimer = setInterval(async () => {
     if (!conversionId.value) {
+      return
+    }
+    if (Date.now() - startedAt > MAX_POLL_DURATION_MS) {
+      stopPoll()
+      errorMessage.value = 'Conversion is taking too long. Please retry.'
       return
     }
     try {
@@ -117,7 +125,7 @@ function startPoll() {
       stopPoll()
       errorMessage.value = 'Lost connection while checking status'
     }
-  }, 2000)
+  }, POLL_INTERVAL_MS)
 }
 
 const ctaDisabled = computed(() => {

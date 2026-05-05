@@ -94,9 +94,20 @@ async def upsert_profile(user_id: str, email: str | None, name: str | None, avat
         return
     sb = get_supabase()
     existing = await asyncio.to_thread(
-        lambda: sb.table("profiles").select("id").eq("id", user_id).limit(1).execute()
+        lambda: sb.table("profiles")
+        .select("id,email,full_name,avatar_url")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
     )
     if existing.data:
+        row = existing.data[0]
+        if (
+            row.get("email") == email
+            and row.get("full_name") == name
+            and row.get("avatar_url") == avatar_url
+        ):
+            return
         await asyncio.to_thread(
             lambda: sb.table("profiles").update(
                 {
