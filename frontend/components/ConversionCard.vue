@@ -178,14 +178,14 @@ async function regenerate() {
 
   <!-- Delete confirmation modal -->
   <UModal v-model="isConfirmModalOpen">
-    <UCard>
+    <UCard class="!bg-white !text-cv-body">
       <template #header>
         <p class="text-base font-bold text-cv-body">
           Remove from history?
         </p>
       </template>
 
-      <p class="text-sm text-cv-body">
+      <p class="text-sm text-cv-muted">
         Remove <span class="font-semibold">{{ filename }}</span> from your history? The PDF will be deleted from storage.
       </p>
 
