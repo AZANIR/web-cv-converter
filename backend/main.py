@@ -2,6 +2,8 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +20,46 @@ from routers import admin, convert, generate, generate_history, history, me, pro
 from services.conversion_runner import recover_pending_conversions
 from services.generation_runner import recover_pending_generations
 
-logging.basicConfig(level=logging.INFO)
+
+def configure_logging() -> None:
+    s = get_settings()
+    log_level_name = (s.log_level or "INFO").upper()
+    log_level = getattr(logging, log_level_name, logging.INFO)
+    log_path = Path(s.log_file_path)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)s [%(name)s] %(message)s",
+        "%Y-%m-%d %H:%M:%S",
+    )
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    root_logger.handlers.clear()
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(formatter)
+
+    file_handler = RotatingFileHandler(
+        log_path,
+        maxBytes=s.log_max_bytes,
+        backupCount=s.log_backup_count,
+        encoding="utf-8",
+    )
+    file_handler.setLevel(log_level)
+    file_handler.setFormatter(formatter)
+
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(file_handler)
+
+    for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"):
+        logger = logging.getLogger(logger_name)
+        logger.handlers.clear()
+        logger.propagate = True
+        logger.setLevel(log_level)
+
+
+configure_logging()
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 

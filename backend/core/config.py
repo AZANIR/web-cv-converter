@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 5 * 1024 * 1024
     conversions_per_hour: int = 10
     signed_url_expires_seconds: int = 3600
+    log_level: str = "INFO"
+    log_file_path: str = "/app/logs/backend.log"
+    log_max_bytes: int = 10 * 1024 * 1024
+    log_backup_count: int = 5
 
     @model_validator(mode="after")
     def check_required_in_production(self) -> "Settings":
