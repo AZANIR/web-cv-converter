@@ -18,6 +18,7 @@ services:
       - ./cvc/repo/backend/assets:/app/assets:ro
       - ./cvc/repo/backend/styles.json:/app/styles.json:ro
       - ./cvc/repo/backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
+      - ./cvc/repo/backend/logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
