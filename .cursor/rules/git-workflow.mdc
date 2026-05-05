@@ -32,6 +32,12 @@ Use lowercase, hyphens as separators, max 4 words after the type prefix.
 2. `git pull origin master` — sync with latest
 3. `git checkout -b feat/{description}` — create branch
 
+### After PR Is Created
+
+- **Do not add any new commits to that PR branch after the PR is opened.**
+- If more work is needed, create a **new branch** from updated `master` and open a **new PR**.
+- Commits are allowed only before PR creation.
+
 ## Conventional Commits
 
 Format: `<type>(<scope>): <description>`
