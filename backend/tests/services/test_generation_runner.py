@@ -49,6 +49,41 @@ class TestRunGenerationPipeline:
         assert mock_embed.search_similar.call_count == 2
         mock_ai.assert_called_once()
 
+    @patch("services.generation_runner.logger.exception")
+    @patch("services.generation_runner.embedding_service")
+    @patch("services.generation_runner.prompt_service")
+    @patch("services.generation_runner.vacancy_parser")
+    @patch("services.generation_runner.get_supabase")
+    async def test_pipeline_failure_logs_exception_details(
+        self, mock_sb, mock_parser, mock_prompts, mock_embed, mock_logger_exception
+    ):
+        sb = MagicMock()
+        sb.table.return_value = sb
+        sb.select.return_value = sb
+        sb.update.return_value = sb
+        sb.eq.return_value = sb
+        sb.limit.return_value = sb
+        sb.execute.return_value = MagicMock(data=[{
+            "id": "vac-1",
+            "raw_input": "bad input",
+            "status": "pending",
+        }])
+        mock_sb.return_value = sb
+
+        mock_prompts.get_prompt.side_effect = ValueError("Prompt not found")
+
+        from services.generation_runner import run_generation_pipeline
+
+        await run_generation_pipeline("vac-1", "cv-1")
+
+        assert mock_logger_exception.call_count == 1
+        call_args = mock_logger_exception.call_args[0]
+
+        # logger.exception(format, vacancy_id, cv_id, exc_type, exc_message)
+        assert "Generation pipeline failed" in call_args[0]
+        assert call_args[3] == "ValueError"
+        assert str(call_args[4]) == "Prompt not found"
+
     @patch("services.generation_runner.embedding_service")
     @patch("services.generation_runner.prompt_service")
     @patch("services.generation_runner.vacancy_parser")

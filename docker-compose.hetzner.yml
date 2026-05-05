@@ -1,24 +1,18 @@
-# Фрагмент для /opt/docker: злий з основним docker-compose.yml або встав у файл вручну
-# після blog-gapta. Шляхи відносно /opt/docker (клон репо: /opt/docker/cvc/repo).
-#
-# Запуск злитої конфігурації (перевірка):
-#   cd /opt/docker && docker compose -f docker-compose.yml -f docker-compose.hetzner.yml config
-#
 services:
   cvc-backend:
     build:
-      context: ./cvc/repo/backend
+      context: ./repo/backend
       dockerfile: Dockerfile
     container_name: cvc-backend
     restart: unless-stopped
     env_file:
-      - ./cvc/repo/backend/.env
+      - ./repo/backend/.env
     volumes:
-      - ./cvc/repo/backend/fonts:/app/fonts:ro
-      - ./cvc/repo/backend/assets:/app/assets:ro
-      - ./cvc/repo/backend/styles.json:/app/styles.json:ro
-      - ./cvc/repo/backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
-      - ./cvc/repo/backend/logs:/app/logs
+      - ./repo/backend/fonts:/app/fonts:ro
+      - ./repo/backend/assets:/app/assets:ro
+      - ./repo/backend/styles.json:/app/styles.json:ro
+      - ./repo/backend/cv_to_json_prompt.md:/app/cv_to_json_prompt.md:ro
+      - ./repo/backend/logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -30,14 +24,14 @@ services:
 
   cvc-frontend:
     build:
-      context: ./cvc/repo/frontend
+      context: ./repo/frontend
       dockerfile: Dockerfile
       args:
         NUXT_PUBLIC_API_URL: https://cvc.valtive.io
     container_name: cvc-frontend
     restart: unless-stopped
     env_file:
-      - ./cvc/repo/frontend/.env.production
+      - ./repo/frontend/.env.production
     environment:
       NUXT_API_BASE_SERVER: http://cvc-backend:8000
       NUXT_PUBLIC_API_URL: https://cvc.valtive.io
@@ -46,3 +40,7 @@ services:
         condition: service_healthy
     networks:
       - web
+
+networks:
+  web:
+    external: true
