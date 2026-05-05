@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+NEVER add tool attribution to git commit messages, pull request titles,
+or pull request descriptions. This includes but is not limited to:
+- "Co-authored-by: Cursor" trailers
+- "Made-with: Cursor" trailers  
+- "Made with [Cursor](...)" markdown attributions
+- "Generated with", "Built with", "Powered by" attributions
+- Any link to cursor.com
+- Similar attributions for Copilot, Claude, or any other AI tool
+The author and the entire content is the human running the commit. Full stop.
