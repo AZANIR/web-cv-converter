@@ -6,6 +6,27 @@ import json
 import pytest
 
 
+@patch("services.generation_runner.get_ai_client")
+@patch("services.generation_runner.get_settings")
+def test_generate_md_with_ai_uses_provider_fallback(mock_get_settings, mock_get_ai_client):
+    settings = MagicMock()
+    settings.ai_provider = "gemini"
+    settings.ai_fallback_providers = "openrouter"
+    settings.model_copy.side_effect = lambda update: settings
+    mock_get_settings.return_value = settings
+
+    primary_client = MagicMock()
+    primary_client.generate.side_effect = RuntimeError("gemini quota exceeded")
+    fallback_client = MagicMock()
+    fallback_client.generate.return_value = "# CV from fallback"
+    mock_get_ai_client.side_effect = [primary_client, fallback_client]
+
+    from services.generation_runner import _generate_md_with_ai
+
+    result = _generate_md_with_ai("prompt")
+    assert result == "# CV from fallback"
+
+
 @pytest.mark.anyio
 class TestRunGenerationPipeline:
     @patch("services.generation_runner.embedding_service")
@@ -111,6 +132,44 @@ class TestRunGenerationPipeline:
         # Should have called update to set status to 'failed'
         update_calls = [c for c in sb.update.call_args_list if "failed" in str(c)]
         assert len(update_calls) > 0
+
+    @patch("services.generation_runner.embedding_service")
+    @patch("services.generation_runner.prompt_service")
+    @patch("services.generation_runner.vacancy_parser")
+    @patch("services.generation_runner._generate_md_with_ai")
+    @patch("services.generation_runner.get_supabase")
+    async def test_pipeline_quota_error_sets_quota_message(
+        self, mock_sb, mock_ai, mock_parser, mock_prompts, mock_embed
+    ):
+        sb = MagicMock()
+        sb.table.return_value = sb
+        sb.select.return_value = sb
+        sb.update.return_value = sb
+        sb.eq.return_value = sb
+        sb.limit.return_value = sb
+        sb.execute.return_value = MagicMock(data=[{
+            "id": "vac-1",
+            "raw_input": "input",
+            "status": "pending",
+        }])
+        mock_sb.return_value = sb
+
+        mock_prompts.get_prompt.return_value = "templatize: {{VACANCY_TEXT}}"
+        mock_prompts.render_prompt.return_value = "generate CV prompt"
+        mock_parser.templatize_vacancy.return_value = {"title": "QA", "tags": []}
+        mock_embed.store_embedding.return_value = "emb-1"
+        mock_embed.search_similar.return_value = []
+        mock_ai.side_effect = RuntimeError("429 RESOURCE_EXHAUSTED quota exceeded")
+
+        from services.generation_runner import run_generation_pipeline
+
+        await run_generation_pipeline("vac-1", "cv-1")
+
+        assert any(
+            call.args and isinstance(call.args[0], dict)
+            and call.args[0].get("error_message") == "AI quota exceeded. Please try again later."
+            for call in sb.update.call_args_list
+        )
 
     @patch("services.generation_runner.get_supabase")
     async def test_pipeline_no_vacancy_returns(self, mock_sb):

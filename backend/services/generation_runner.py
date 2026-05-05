@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 
 from core.ai_client import get_ai_client
+from core.config import get_settings
 from core.supabase import get_supabase
 from services import embedding_service, prompt_service, vacancy_parser
 
@@ -15,10 +16,36 @@ _MAX_CONCURRENT_TASKS = 10
 _semaphore = asyncio.Semaphore(_MAX_CONCURRENT_TASKS)
 
 
+def _is_quota_error(exc: Exception) -> bool:
+    text = str(exc).upper()
+    return "429" in text or "RESOURCE_EXHAUSTED" in text or "QUOTA" in text
+
+
 def _generate_md_with_ai(full_prompt: str) -> str:
     """Call AI to generate CV markdown from the assembled prompt."""
-    client = get_ai_client()
-    return client.generate(full_prompt, temperature=0.7)
+    settings = get_settings()
+    providers = [(settings.ai_provider or "gemini").strip().lower()]
+    if settings.ai_fallback_providers:
+        for raw in settings.ai_fallback_providers.split(","):
+            provider = raw.strip().lower()
+            if provider and provider not in providers:
+                providers.append(provider)
+
+    last_exc: Exception | None = None
+    for provider in providers:
+        try:
+            client = get_ai_client(settings.model_copy(update={"ai_provider": provider}))
+            return client.generate(full_prompt, temperature=0.7)
+        except Exception as exc:
+            last_exc = exc
+            if provider != providers[-1]:
+                logger.warning("AI provider %s failed for generation; trying fallback", provider)
+                continue
+            raise
+
+    if last_exc is not None:
+        raise last_exc
+    raise RuntimeError("No AI provider configured")
 
 
 async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
@@ -105,6 +132,8 @@ async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
                 exc,
             )
             generic_msg = "Generation failed. Please try again or contact support."
+            if _is_quota_error(exc):
+                generic_msg = "AI quota exceeded. Please try again later."
             sb.table("vacancies").update({
                 "status": "failed",
                 "error_message": generic_msg,
