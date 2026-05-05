@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
     gemini_fallback_models: str = ""
     gemini_retry_on_503: bool = True
-    gemini_retry_on_429: bool = True
+    gemini_retry_on_429: bool = False
     gemini_max_output_tokens: int = 65536
     gemini_attempt_timeout_seconds: int = 45
     conversion_ai_timeout_seconds: int = 90
