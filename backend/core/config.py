@@ -26,12 +26,25 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     # gemini | anthropic
     ai_provider: str = "gemini"
+    # Optional provider fallback order, comma-separated (e.g. anthropic)
+    ai_fallback_providers: str = ""
     gemini_api_key: str = ""
+    # Priority-ordered list (comma-separated). First available model wins.
+    gemini_models: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    gemini_fallback_models: str = ""
+    gemini_retry_on_503: bool = True
+    gemini_retry_on_429: bool = True
     gemini_max_output_tokens: int = 65536
+    gemini_attempt_timeout_seconds: int = 45
+    conversion_ai_timeout_seconds: int = 90
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-haiku-4-5-20251001"
     anthropic_max_tokens: int = 4096
+    openrouter_api_key: str = ""
+    openrouter_model: str = "openai/gpt-4.1-mini"
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_timeout_seconds: int = 60
     allowed_origins: str = "http://localhost:3000"
     # Comma-separated emails that receive admin (UI + /api/admin/*) without profiles.role in DB.
     admin_emails: str = ""

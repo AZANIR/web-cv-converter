@@ -13,8 +13,11 @@ from __future__ import annotations
 import json
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from abc import ABC, abstractmethod
 from typing import Any
+
+import httpx
 
 from core.config import Settings, get_settings
 
@@ -69,11 +72,47 @@ class GeminiClient(AIClient):
             raise RuntimeError("GEMINI_API_KEY not set (required when AI_PROVIDER=gemini)")
         self._s = s
 
+    @staticmethod
+    def _normalize_model_name(model: str) -> str:
+        out = (model or "").strip()
+        if out.startswith("models/"):
+            out = out[len("models/") :]
+        return out
+
+    def _candidate_models(self) -> list[str]:
+        models: list[str] = []
+        if self._s.gemini_models:
+            for raw in self._s.gemini_models.split(","):
+                model = self._normalize_model_name(raw)
+                if model and model not in models:
+                    models.append(model)
+        default_model = self._normalize_model_name(self._s.gemini_model)
+        if default_model and default_model not in models:
+            models.append(default_model)
+        if self._s.gemini_fallback_models:
+            for raw in self._s.gemini_fallback_models.split(","):
+                model = self._normalize_model_name(raw)
+                if model and model not in models:
+                    models.append(model)
+        return models
+
+    @staticmethod
+    def _is_gemini_503(exc: Exception) -> bool:
+        status_code = getattr(exc, "status_code", None)
+        return status_code == 503 or "503" in str(exc)
+
+    @staticmethod
+    def _is_gemini_429(exc: Exception) -> bool:
+        status_code = getattr(exc, "status_code", None)
+        return status_code == 429 or "429" in str(exc) or "RESOURCE_EXHAUSTED" in str(exc)
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _call(self, prompt: str, *, temperature: float, response_mime_type: str | None = None) -> tuple[str, Any]:
+    def _call(
+        self, prompt: str, *, temperature: float, response_mime_type: str | None = None
+    ) -> tuple[str, Any]:
         """Call the Gemini API and return (raw_text, finish_reason)."""
         from google.genai import Client, types  # type: ignore[import]
 
@@ -85,11 +124,56 @@ class GeminiClient(AIClient):
             cfg_kwargs["response_mime_type"] = response_mime_type
 
         client = Client(api_key=self._s.gemini_api_key)
-        response = client.models.generate_content(
-            model=self._s.gemini_model,
-            contents=prompt,
-            config=types.GenerateContentConfig(**cfg_kwargs),
-        )
+        models = self._candidate_models()
+        last_exc: Exception | None = None
+        response = None
+        for idx, model in enumerate(models):
+            try:
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(
+                        client.models.generate_content,
+                        model=model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(**cfg_kwargs),
+                    )
+                    response = future.result(timeout=self._s.gemini_attempt_timeout_seconds)
+                if idx > 0:
+                    logger.warning("Gemini fallback model succeeded: %s", model)
+                break
+            except FuturesTimeoutError as exc:
+                last_exc = exc
+                if idx < len(models) - 1:
+                    logger.warning(
+                        "Gemini model %s timed out after %ss, trying fallback model",
+                        model,
+                        self._s.gemini_attempt_timeout_seconds,
+                    )
+                    continue
+                raise TimeoutError(
+                    f"Gemini model {model} timed out after "
+                    f"{self._s.gemini_attempt_timeout_seconds}s"
+                ) from exc
+            except Exception as exc:
+                last_exc = exc
+                if (
+                    (
+                        (self._s.gemini_retry_on_503 and self._is_gemini_503(exc))
+                        or (self._s.gemini_retry_on_429 and self._is_gemini_429(exc))
+                    )
+                    and idx < len(models) - 1
+                ):
+                    logger.warning(
+                        "Gemini model %s unavailable (%s), trying fallback model",
+                        model,
+                        getattr(exc, "status_code", "unknown"),
+                    )
+                    continue
+                raise
+        else:
+            raise RuntimeError("Gemini call failed without exception context")
+
+        if response is None and last_exc is not None:
+            raise last_exc
 
         if response.prompt_feedback is not None:
             br = getattr(response.prompt_feedback, "block_reason", None)
@@ -236,6 +320,68 @@ class AnthropicClient(AIClient):
 
 
 # ---------------------------------------------------------------------------
+# OpenRouter implementation
+# ---------------------------------------------------------------------------
+
+class OpenRouterClient(AIClient):
+    """AI client backed by OpenRouter (OpenAI-compatible API)."""
+
+    def __init__(self, s: Settings) -> None:
+        if not s.openrouter_api_key:
+            raise RuntimeError("OPENROUTER_API_KEY not set (required when AI_PROVIDER=openrouter)")
+        self._s = s
+
+    def _call(self, prompt: str, *, temperature: float) -> str:
+        headers = {
+            "Authorization": f"Bearer {self._s.openrouter_api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": self._s.openrouter_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+        }
+        with httpx.Client(timeout=self._s.openrouter_timeout_seconds) as client:
+            response = client.post(
+                f"{self._s.openrouter_base_url.rstrip('/')}/chat/completions",
+                headers=headers,
+                json=payload,
+            )
+            if response.status_code >= 400:
+                raise ValueError(f"OpenRouter error {response.status_code}: {response.text[:400]}")
+            data = response.json()
+        try:
+            return (
+                data["choices"][0]["message"]["content"].strip()
+                if data["choices"][0]["message"]["content"]
+                else ""
+            )
+        except Exception as exc:
+            raise ValueError("OpenRouter returned unexpected response format") from exc
+
+    def generate(self, prompt: str, *, temperature: float = 0.7) -> str:
+        return self._call(prompt, temperature=temperature)
+
+    def generate_json(self, prompt: str, *, temperature: float = 0.2) -> dict[str, Any]:
+        raw = self._call(prompt, temperature=temperature)
+        text = _strip_json_fences(raw)
+        if not text:
+            raise ValueError("OpenRouter returned an empty response.")
+        try:
+            out = json.loads(text)
+            if isinstance(out, dict):
+                return out
+        except json.JSONDecodeError:
+            pass
+        start, end = text.find("{"), text.rfind("}")
+        if start != -1 and end > start:
+            out = json.loads(text[start : end + 1])
+            if isinstance(out, dict):
+                return out
+        raise ValueError("Could not parse JSON from OpenRouter response")
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -252,4 +398,6 @@ def get_ai_client(s: Settings | None = None) -> AIClient:
         return GeminiClient(s)
     if provider == "anthropic":
         return AnthropicClient(s)
-    raise RuntimeError(f"Unknown AI_PROVIDER={provider!r}; use 'gemini' or 'anthropic'.")
+    if provider == "openrouter":
+        return OpenRouterClient(s)
+    raise RuntimeError(f"Unknown AI_PROVIDER={provider!r}; use 'gemini', 'anthropic', or 'openrouter'.")

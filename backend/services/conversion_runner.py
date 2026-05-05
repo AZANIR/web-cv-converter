@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from core.config import get_settings
 from core.supabase import get_supabase
 from services import ai_service, pdf_service, storage_service
 
@@ -13,6 +14,7 @@ _semaphore = asyncio.Semaphore(_MAX_CONCURRENT_TASKS)
 async def run_conversion_pipeline(conversion_id: str) -> None:
     async with _semaphore:
         sb = get_supabase()
+        settings = get_settings()
         res = sb.table("conversions").select("*").eq("id", conversion_id).limit(1).execute()
         if not res.data:
             return
@@ -27,7 +29,10 @@ async def run_conversion_pipeline(conversion_id: str) -> None:
         try:
             sb.table("conversions").update({"status": "processing"}).eq("id", conversion_id).execute()
 
-            cv_json = await asyncio.to_thread(ai_service.convert_md_to_json, md)
+            cv_json = await asyncio.wait_for(
+                asyncio.to_thread(ai_service.convert_md_to_json, md),
+                timeout=settings.conversion_ai_timeout_seconds,
+            )
             pdf_bytes = await asyncio.to_thread(pdf_service.generate_pdf, cv_json, include_header)
             path, pdf_name = await asyncio.to_thread(
                 storage_service.upload_pdf, pdf_bytes, user_id, orig_name
@@ -40,6 +45,16 @@ async def run_conversion_pipeline(conversion_id: str) -> None:
                     "pdf_storage_path": path,
                     "pdf_filename": pdf_name,
                     "error_message": None,
+                }
+            ).eq("id", conversion_id).execute()
+        except TimeoutError:
+            logger.exception("Conversion %s timed out during AI step", conversion_id)
+            sb.table("conversions").update(
+                {
+                    "status": "failed",
+                    "error_message": (
+                        "AI conversion timed out. Please retry in a minute."
+                    ),
                 }
             ).eq("id", conversion_id).execute()
         except Exception:
