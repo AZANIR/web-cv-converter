@@ -43,7 +43,8 @@ jobs:
             git fetch origin
             git reset --hard origin/master
             cd /opt/docker/cvc
-            docker compose down cvc-backend cvc-frontend || true
-            docker compose build --no-cache cvc-backend cvc-frontend
+            cp /opt/docker/cvc/repo/docker-compose.hetzner.yml /opt/docker/cvc/docker-compose.yml
+            docker compose -f /opt/docker/cvc/docker-compose.yml down cvc-backend cvc-frontend || true
+            docker compose -f /opt/docker/cvc/docker-compose.yml build --no-cache cvc-backend cvc-frontend
             docker image prune -f
-            docker compose up -d cvc-backend cvc-frontend
+            docker compose -f /opt/docker/cvc/docker-compose.yml up -d cvc-backend cvc-frontend

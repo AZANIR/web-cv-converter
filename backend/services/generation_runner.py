@@ -96,8 +96,14 @@ async def run_generation_pipeline(vacancy_id: str, cv_id: str) -> None:
                 doc_id=cv_id,
             )
 
-        except Exception:
-            logger.exception("Generation pipeline failed for vacancy=%s cv=%s", vacancy_id, cv_id)
+        except Exception as exc:
+            logger.exception(
+                "Generation pipeline failed for vacancy=%s cv=%s (%s: %s)",
+                vacancy_id,
+                cv_id,
+                type(exc).__name__,
+                exc,
+            )
             generic_msg = "Generation failed. Please try again or contact support."
             sb.table("vacancies").update({
                 "status": "failed",

@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -22,11 +23,15 @@ from services.generation_runner import recover_pending_generations
 
 
 def configure_logging() -> None:
+    """Attach handlers to the root logger (console always; file if writable).
+
+    File logging can fail on read-only images or missing volume permissions; in
+    that case stderr still receives all application logs (visible in ``docker logs``).
+    """
     s = get_settings()
     log_level_name = (s.log_level or "INFO").upper()
     log_level = getattr(logging, log_level_name, logging.INFO)
     log_path = Path(s.log_file_path)
-    log_path.parent.mkdir(parents=True, exist_ok=True)
 
     formatter = logging.Formatter(
         "%(asctime)s %(levelname)s [%(name)s] %(message)s",
@@ -36,21 +41,27 @@ def configure_logging() -> None:
     root_logger.setLevel(log_level)
     root_logger.handlers.clear()
 
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(log_level)
     console_handler.setFormatter(formatter)
-
-    file_handler = RotatingFileHandler(
-        log_path,
-        maxBytes=s.log_max_bytes,
-        backupCount=s.log_backup_count,
-        encoding="utf-8",
-    )
-    file_handler.setLevel(log_level)
-    file_handler.setFormatter(formatter)
-
     root_logger.addHandler(console_handler)
-    root_logger.addHandler(file_handler)
+
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = RotatingFileHandler(
+            log_path,
+            maxBytes=s.log_max_bytes,
+            backupCount=s.log_backup_count,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        root_logger.addHandler(file_handler)
+    except OSError as e:
+        sys.stderr.write(
+            f"[logging] Could not open log file {log_path!r} ({e}); "
+            "using stderr only (check docker logs).\n"
+        )
 
     for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"):
         logger = logging.getLogger(logger_name)
@@ -61,11 +72,16 @@ def configure_logging() -> None:
 
 configure_logging()
 
+_app_logger = logging.getLogger(__name__)
+
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Re-apply after uvicorn's dictConfig (defensive) so app + task loggers stay wired.
+    configure_logging()
+    _app_logger.info("Logging configured (level=%s)", (get_settings().log_level or "INFO").upper())
     await recover_pending_conversions()
     await recover_pending_generations()
     yield
